@@ -1,10 +1,21 @@
 #!/usr/bin/env bash
 
+source /etc/os-release
+distro_major_version=${VERSION_ID%.*}
+distro_minor_version=${VERSION_ID#*.}
 
-sudo yum install epel-release git vim wget
+pkg_mgr=dnf
+puppet_major=6
 
-sudo rpm -Uvh https://yum.puppet.com/puppet5-release-el-7.noarch.rpm
-sudo yum install -y puppet-agent
+if [[ $distro_major_version -le "7" ]]; then
+  pkg_mgr=yum
+  puppet_major=5
+fi
+
+sudo $pkg_mgr install -y epel-release git-core vim wget
+
+sudo rpm -Uvh https://yum.puppet.com/puppet${puppet_major}-release-el-${distro_major_version}.noarch.rpm
+sudo $pkg_mgr install -y puppet-agent
 
 sudo /opt/puppetlabs/puppet/bin/gem install r10k
 
