@@ -31,6 +31,8 @@ sources:
     basedir: '/etc/puppetlabs/code/environments'
 EOF
 sudo mkdir -p /var/cache/r10k
+
+sudo $pkg_mgr install -y puppetserver
 sudo chown puppet:puppet /var/cache/r10k
 
 # Fix permissions for puppet and install from control-repo
