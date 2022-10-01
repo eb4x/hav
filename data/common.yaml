@@ -17,6 +17,29 @@ foreman_proxy::tftp: true
 
 foreman_proxy::plugin::discovery::install_images: true
 
+dhcp::hosts:
+  messy-maas:
+    mac: '38:ea:a7:13:84:3c'
+    ip: '192.168.3.1'
+  cool-gator:
+    mac: 'c4:34:6b:b5:ad:80'
+    ip: '192.168.3.2'
+  key-shrimp:
+    mac: 'c4:34:6b:b5:ad:4c'
+    ip: '192.168.3.3'
+  mint-panda:
+    mac: 'c4:34:6b:b6:a1:e0'
+    ip: '192.168.3.4'
+  novel-dodo:
+    mac: 'c4:34:6b:ad:74:a0'
+    ip: '192.168.3.5'
+  famous-koi:
+    mac: 'b8:ca:3a:5f:1d:00'
+    ip: '192.168.3.6'
+  grand-worm:
+    mac: 'b8:ca:3a:5e:8f:20'
+    ip: '192.168.3.7'
+
 profile::foreman::settings:
   # General
   entries_per_page: 100
