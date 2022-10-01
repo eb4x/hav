@@ -3,8 +3,6 @@ class profile::foreman(
   Hash $dhcp_classes = {},
   String $initial_admin_password = 'changeme',
   String $db_password = 'changeme',
-  String $oauth_consumer_key = 'GjBJNZt3HTkAKQUT9ypGHoWcQMFDzshN',
-  String $oauth_consumer_secret = 'tjk92skiejChgsu35uRB3VjsY7fpankt',
 ) {
 
   class { '::foreman::repo':
@@ -21,8 +19,6 @@ class profile::foreman(
     plugin_version => 'latest',
     initial_admin_password => $initial_admin_password,
     db_password => $db_password,
-    oauth_consumer_key => $oauth_consumer_key,
-    oauth_consumer_secret => $oauth_consumer_secret,
   }
 
   include ::foreman::cli
