@@ -7,6 +7,10 @@ distro_minor_version=${VERSION_ID#*.}
 pkg_mgr=dnf
 puppet_major=7
 
+if [[ $distro_major_version -eq "8" ]]; then
+  sudo $pkg_mgr module enable postgresql:12
+fi
+
 if [[ $distro_major_version -le "7" ]]; then
   pkg_mgr=yum
   puppet_major=5
