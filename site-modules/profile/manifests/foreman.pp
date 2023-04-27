@@ -51,6 +51,20 @@ class profile::foreman(
 
   create_resources('dhcp::dhcp_class', $dhcp_classes)
 
+  class { '::candlepin::repo':
+    version => '4.1',
+  }
+
+  class { '::katello::repo':
+    repo_version => '4.1',
+  }
+
+  include ::pulpcore::repo
+
+  include ::katello
+  Class['katello::repo']
+  -> Class['katello']
+
   include ::foreman_proxy
   Class['foreman::repo']
   -> Class['foreman_proxy']
