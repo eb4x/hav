@@ -85,6 +85,13 @@ class profile::foreman(
 
   include ::foreman_proxy::plugin::discovery
 
+  # Fix pulpcore dependency
+  package { 'python3-markuppy':
+    ensure => present,
+  }
+  Package['python3-markuppy']
+  -> Class['pulpcore']
+
   include ::foreman_proxy_content
 
   case $::osfamily {
