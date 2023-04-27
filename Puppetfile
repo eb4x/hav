@@ -3,7 +3,7 @@ mod 'theforeman/foreman',
   :ref => '17.0.0'
 mod 'theforeman/foreman_proxy',
   :git => 'https://github.com/theforeman/puppet-foreman_proxy',
-  :ref => '18.2.0'
+  :ref => '18.2.0' # cherry-pick 2af52b188be1e3ca16c47c35d8d78d66509f94b1 for almalinux
 mod 'theforeman/puppetserver_foreman',
   :git => 'https://github.com/theforeman/puppet-puppetserver_foreman',
   :ref => '1.0.0'
