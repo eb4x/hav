@@ -1,3 +1,13 @@
+# https://github.com/theforeman/foreman-installer/blob/develop/config/katello.yaml
+# order:
+#   - certs
+#   - foreman
+#   - katello
+#   - foreman_proxy
+#   - foreman_proxy::plugin::pulp
+#   - foreman_proxy_content
+#   - puppet
+
 class profile::foreman(
   Hash $settings = {},
   Hash $dhcp_classes = {},
@@ -74,6 +84,8 @@ class profile::foreman(
   -> Class['foreman_proxy::proxydhcp']
 
   include ::foreman_proxy::plugin::discovery
+
+  include ::foreman_proxy_content
 
   case $::osfamily {
     'RedHat': {
