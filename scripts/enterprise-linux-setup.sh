@@ -5,7 +5,7 @@ distro_major_version=${VERSION_ID%.*}
 distro_minor_version=${VERSION_ID#*.}
 
 pkg_mgr=dnf
-puppet_major=6
+puppet_major=7
 
 if [[ $distro_major_version -le "7" ]]; then
   pkg_mgr=yum
