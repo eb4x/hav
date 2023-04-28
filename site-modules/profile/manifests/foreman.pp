@@ -70,6 +70,8 @@ class profile::foreman(
   }
 
   include ::pulpcore::repo
+  Class['pulpcore::repo']
+  -> Class['pulpcore']
 
   include ::katello
   Class['katello::repo']
