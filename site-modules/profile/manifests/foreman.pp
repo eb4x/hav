@@ -74,6 +74,8 @@ class profile::foreman(
   -> Class['pulpcore']
 
   include ::katello
+  Class['foreman']
+  -> Class['katello']
 
   include ::foreman_proxy
   Class['foreman::repo']
