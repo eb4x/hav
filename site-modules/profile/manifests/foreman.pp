@@ -67,7 +67,11 @@ class profile::foreman(
 
   class { '::katello::repo':
     repo_version => '4.1',
-  } -> Class['katello']
+    before => [
+      Class['certs'],
+      Class['katello'],
+    ],
+  }
 
   include ::pulpcore::repo
   Class['pulpcore::repo']
