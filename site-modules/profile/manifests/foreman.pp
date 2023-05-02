@@ -87,10 +87,12 @@ class profile::foreman(
 
   include ::foreman_proxy::plugin::discovery
 
-  # Fix pulpcore dependency
+  # XXX Fix pulpcore dependency, maybe fixed in a future release?
   package { 'python3-markuppy':
     ensure => present,
-  } -> Class['pulpcore']
+    require => Class['pulpcore::repo'],
+    before => Class['pulpcore'],
+  }
 
   include ::pulpcore::repo
   include ::foreman_proxy_content
