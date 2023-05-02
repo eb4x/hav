@@ -67,15 +67,13 @@ class profile::foreman(
 
   class { '::katello::repo':
     repo_version => '4.1',
-  }
+  } -> Class['katello']
 
   include ::pulpcore::repo
   Class['pulpcore::repo']
   -> Class['pulpcore']
 
   include ::katello
-  Class['katello::repo']
-  -> Class['katello']
 
   include ::foreman_proxy
   Class['foreman::repo']
@@ -90,9 +88,7 @@ class profile::foreman(
   # Fix pulpcore dependency
   package { 'python3-markuppy':
     ensure => present,
-  }
-  Package['python3-markuppy']
-  -> Class['pulpcore']
+  } -> Class['pulpcore']
 
   include ::foreman_proxy_content
 
