@@ -73,10 +73,6 @@ class profile::foreman(
     ],
   }
 
-  include ::pulpcore::repo
-  Class['pulpcore::repo']
-  -> Class['pulpcore']
-
   include ::katello
   Class['foreman']
   -> Class['katello']
@@ -96,6 +92,7 @@ class profile::foreman(
     ensure => present,
   } -> Class['pulpcore']
 
+  include ::pulpcore::repo
   include ::foreman_proxy_content
 
   case $::osfamily {
