@@ -15,6 +15,13 @@ class profile::foreman(
   String $db_password = 'changeme',
 ) {
 
+  selinux::port { 'tomcat_candlepin_port':
+    seltype => 'http_port_t',
+    protocol => 'tcp',
+    port => 23443,
+    before => Service['tomcat'],
+  }
+
   class { '::foreman::repo':
     repo => '2.5',
     before => [

@@ -35,6 +35,7 @@ mod 'translate',          :git => 'https://github.com/puppetlabs/puppetlabs-tran
 mod 'firewalld',        :git => 'https://github.com/voxpupuli/puppet-firewalld',  :ref => 'v4.4.0'
 mod 'puppet-r10k',      :git => 'https://github.com/voxpupuli/puppet-r10k',       :ref => 'v10.1.0'
 mod 'redis',            :git => 'https://github.com/voxpupuli/puppet-redis',      :ref => 'v6.1.0'
+mod 'selinux',          :git => 'https://github.com/voxpupuli/puppet-selinux',    :ref => 'v3.4.1'
 mod 'trusted_ca',       :git => 'https://github.com/voxpupuli/puppet-trusted_ca', :ref => 'v3.1.0'
 mod 'voxpupuli/extlib', :git => 'https://github.com/voxpupuli/puppet-extlib',     :ref => 'v5.3.0'
 
