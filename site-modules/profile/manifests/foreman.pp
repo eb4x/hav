@@ -23,6 +23,7 @@ class profile::foreman(
       Class['foreman::cli'],
       Class['foreman_proxy'],
       Class['katello'],
+      Package['katello-debug'],
     ],
   }
 
@@ -80,7 +81,7 @@ class profile::foreman(
 
   include ::katello
   Class['pulpcore::repo']
-  -> Class['katello']
+  -> Package['postgresql-evr']
 
   include ::foreman_proxy
 
