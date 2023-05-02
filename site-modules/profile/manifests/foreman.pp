@@ -17,6 +17,13 @@ class profile::foreman(
 
   class { '::foreman::repo':
     repo => '2.5',
+    before => [
+      Class['certs'],
+      Class['foreman'],
+      Class['foreman::cli'],
+      Class['foreman_proxy'],
+      Class['katello'],
+    ],
   }
 
   class { '::puppet':
@@ -32,8 +39,6 @@ class profile::foreman(
   }
 
   include ::foreman::cli
-  Class['foreman::repo']
-  -> Class['foreman::cli']
 
   foreman::cli::plugin { 'foreman':
     require => Class['foreman::repo'],
@@ -74,12 +79,8 @@ class profile::foreman(
   }
 
   include ::katello
-  Class['foreman']
-  -> Class['katello']
 
   include ::foreman_proxy
-  Class['foreman::repo']
-  -> Class['foreman_proxy']
 
   # temporary fix, https://github.com/theforeman/puppet-foreman_proxy/pull/719
   User[$foreman_proxy::user]
