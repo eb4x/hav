@@ -3,20 +3,20 @@ mod 'theforeman/foreman',
   :ref => '22.2.0'
 mod 'theforeman/foreman_proxy',
   :git => 'https://github.com/theforeman/puppet-foreman_proxy',
-  :ref => '24.1.0'
+  :ref => '24.2.0'
 mod 'theforeman/puppetserver_foreman',
   :git => 'https://github.com/theforeman/puppet-puppetserver_foreman',
   :ref => '2.2.0'
 
 mod 'theforeman/dhcp',     :git => 'https://github.com/theforeman/puppet-dhcp',     :ref => '8.2.0'
 mod 'theforeman/dns',      :git => 'https://github.com/theforeman/puppet-dns',      :ref => '9.5.1'
-mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '7.1.0'
+mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '7.2.0'
 mod 'theforeman/puppet',   :git => 'https://github.com/theforeman/puppet-puppet',   :ref => '16.5.0'
 mod 'theforeman/tftp',     :git => 'https://github.com/theforeman/puppet-tftp',     :ref => '8.0.0'
 
-mod 'katello/candlepin',             :git => 'https://github.com/theforeman/puppet-candlepin',             :ref => '13.1.0'
+mod 'katello/candlepin',             :git => 'https://github.com/theforeman/puppet-candlepin',             :ref => '13.2.0'
 mod 'katello/certs',                 :git => 'https://github.com/theforeman/puppet-certs',                 :ref => '16.0.1'
-mod 'katello/foreman_proxy_content', :git => 'https://github.com/theforeman/puppet-foreman_proxy_content', :ref => '22.2.0'
+mod 'katello/foreman_proxy_content', :git => 'https://github.com/theforeman/puppet-foreman_proxy_content', :ref => '23.0.0'
 mod 'katello/katello',               :git => 'https://github.com/theforeman/puppet-katello',               :ref => '22.1.1'
 mod 'katello/qpid',                  :git => 'https://github.com/theforeman/puppet-qpid',                  :ref => '9.1.0'
 
