@@ -23,7 +23,7 @@ class profile::foreman(
   }
 
   class { '::foreman::repo':
-    repo => '3.4',
+    repo => '3.5',
     before => [
       Class['certs'],
       Class['foreman'],
@@ -76,11 +76,11 @@ class profile::foreman(
   create_resources('dhcp::dhcp_class', $dhcp_classes)
 
   class { '::candlepin::repo':
-    version => '4.6',
+    version => '4.7',
   }
 
   class { '::katello::repo':
-    repo_version => '4.6',
+    repo_version => '4.7',
     before => [
       Class['certs'],
       Class['katello'],
