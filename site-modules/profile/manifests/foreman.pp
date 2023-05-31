@@ -84,6 +84,7 @@ class profile::foreman(
     before => [
       Class['certs'],
       Class['katello'],
+      Package['katello-client-bootstrap'],
     ],
   }
 
