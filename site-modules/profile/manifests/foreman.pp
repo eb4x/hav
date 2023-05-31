@@ -30,7 +30,6 @@ class profile::foreman(
       Class['foreman::cli'],
       Class['foreman_proxy'],
       Class['katello'],
-      Package['katello-debug'],
     ],
   }
 
@@ -85,6 +84,7 @@ class profile::foreman(
       Class['certs'],
       Class['katello'],
       Package['katello-client-bootstrap'],
+      Package['katello-debug'],
     ],
   }
 
