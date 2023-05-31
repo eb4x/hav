@@ -8,7 +8,8 @@ pkg_mgr=dnf
 puppet_major=7
 
 if [[ $distro_major_version -eq "8" ]]; then
-  sudo $pkg_mgr module enable postgresql:12
+  sudo $pkg_mgr module enable -y postgresql:12
+  sudo $pkg_mgr module enable -y ruby:2.7
 fi
 
 if [[ $distro_major_version -le "7" ]]; then
