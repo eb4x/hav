@@ -17,7 +17,7 @@ if [[ $distro_major_version -le "7" ]]; then
   puppet_major=5
 fi
 
-sudo $pkg_mgr install -y epel-release git-core vim wget
+sudo $pkg_mgr install -y bash-completion epel-release git-core vim wget
 
 sudo rpm -Uvh https://yum.puppet.com/puppet${puppet_major}-release-el-${distro_major_version}.noarch.rpm
 sudo $pkg_mgr install -y puppet-agent
