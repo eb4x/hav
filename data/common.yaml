@@ -1,5 +1,8 @@
 ---
 
+apache::default_vhost: false
+apache::default_mods: false
+
 redis::bind: '127.0.0.1'
 
 foreman::cli::version: latest
