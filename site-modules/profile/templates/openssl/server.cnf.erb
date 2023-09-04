@@ -1,0 +1,34 @@
+# file managed by puppet
+#
+# SSLeay example configuration file.
+#
+
+# This definition stops the following lines choking if HOME isn't
+# defined.
+HOME                    = .
+RANDFILE                = $ENV::HOME/.rnd
+
+[ req ]
+default_bits            = 2048
+default_md              = sha256
+distinguished_name      = dn
+prompt                  = no
+utf8                    = yes
+<% if @altnames and not @altnames.empty? -%>
+req_extensions          = v3_req
+
+[ v3_req ]
+subjectAltName = @alt_names
+<% end -%>
+
+[ dn ]
+countryName             = NO
+organizationName        = UH-IaaS
+commonName              = <%= @cn %>
+
+<% unless @altnames.empty? -%>
+[ alt_names ]
+<% @altnames.each_with_index do |item, index|  -%>
+DNS.<%= index+1 %> = <%= item %>
+<% end -%>
+<% end -%>
