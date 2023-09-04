@@ -39,6 +39,9 @@ mod 'systemd',          :git => 'https://github.com/voxpupuli/puppet-systemd',  
 mod 'trusted_ca',       :git => 'https://github.com/voxpupuli/puppet-trusted_ca', :ref => 'v4.1.0'
 mod 'voxpupuli/extlib', :git => 'https://github.com/voxpupuli/puppet-extlib',     :ref => 'v5.3.0'
 
+#mod 'openssl',          :git => 'https://github.com/camptocamp/puppet-openssl', :ref => '1.10.0'
+mod 'openssl',          :git => 'https://github.com/voxpupuli/puppet-openssl', :ref => '1.10.0'
+
 mod 'choria/mcollective', :git => 'https://github.com/choria-io/puppet-mcollective', :ref => '0.13.4'
 mod 'datacat',            :git => 'https://github.com/richardc/puppet-datacat',      :ref => '0.6.2'
 mod 'libvirt',            :git => 'https://github.com/eb4x/puppet-libvirt',          :ref => 'master'

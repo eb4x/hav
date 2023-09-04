@@ -1,0 +1,6 @@
+---
+profile::openssl::certs:
+  "dashboard.slips.pl":
+    cn:     "dashboard.vagrant.local"
+    altnames:
+      - "dashboard.slips.pl"
