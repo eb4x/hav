@@ -8,9 +8,8 @@
 #   - foreman_proxy_content
 #   - puppet
 
-class profile::foreman(
+class profile::foreman (
   Hash $settings = {},
-  Hash $dhcp_classes = {},
   String $initial_admin_password = 'changeme',
   String $db_password = 'changeme',
 ) {
@@ -72,7 +71,6 @@ class profile::foreman(
     }
   }
 
-  create_resources('dhcp::dhcp_class', $dhcp_classes)
 
   class { '::candlepin::repo':
     version => '4.1',
@@ -89,14 +87,6 @@ class profile::foreman(
   include ::katello
   Class['pulpcore::repo']
   -> Package['postgresql-evr']
-
-  include ::foreman_proxy
-
-  # temporary fix, https://github.com/theforeman/puppet-foreman_proxy/pull/719
-  User[$foreman_proxy::user]
-  -> Class['foreman_proxy::proxydhcp']
-
-  include ::foreman_proxy::plugin::discovery
 
   # XXX Fix pulpcore dependency, maybe fixed in a future release?
   package { 'python3-markuppy':
