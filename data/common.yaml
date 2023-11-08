@@ -3,6 +3,13 @@
 redis::bind: '127.0.0.1'
 
 foreman::repo::repo: '2.5'
+
+foreman::version: latest
+foreman::plugin_version: latest
+
+foreman::initial_admin_password: changeme
+foreman::db_password: changeme
+
 foreman::cli::version: latest
 foreman::cli::plugin::version: latest
 

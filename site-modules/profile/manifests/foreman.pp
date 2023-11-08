@@ -10,22 +10,17 @@
 
 class profile::foreman (
   Hash $settings = {},
-  String $initial_admin_password = 'changeme',
-  String $db_password = 'changeme',
 ) {
 
+  include ::foreman
   include ::foreman::repo
+
+  Class['foreman::repo']
+  -> Class['foreman::install']
 
   class { '::puppet':
     server                => true,
     server_external_nodes => '',
-  }
-
-  class { '::foreman':
-    version => 'latest',
-    plugin_version => 'latest',
-    initial_admin_password => $initial_admin_password,
-    db_password => $db_password,
   }
 
   include ::foreman::cli
