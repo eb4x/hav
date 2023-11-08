@@ -14,13 +14,6 @@ class profile::foreman (
   String $db_password = 'changeme',
 ) {
 
-  selinux::port { 'tomcat_candlepin_port':
-    seltype => 'http_port_t',
-    protocol => 'tcp',
-    port => 23443,
-    before => Service['tomcat'],
-  }
-
   class { '::foreman::repo':
     repo => '2.5',
     before => [
@@ -70,33 +63,6 @@ class profile::foreman (
       require => Class['foreman::database'],
     }
   }
-
-
-  class { '::candlepin::repo':
-    version => '4.1',
-  }
-
-  class { '::katello::repo':
-    repo_version => '4.1',
-    before => [
-      Class['certs'],
-      Class['katello'],
-    ],
-  }
-
-  include ::katello
-  Class['pulpcore::repo']
-  -> Package['postgresql-evr']
-
-  # XXX Fix pulpcore dependency, maybe fixed in a future release?
-  package { 'python3-markuppy':
-    ensure => present,
-    require => Class['pulpcore::repo'],
-    before => Class['pulpcore'],
-  }
-
-  include ::pulpcore::repo
-  include ::foreman_proxy_content
 
   case $::osfamily {
     'RedHat': {
