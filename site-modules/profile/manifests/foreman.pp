@@ -14,6 +14,8 @@ class profile::foreman (
 
   include ::foreman
   include ::foreman::cli
+  foreman::cli::plugin { 'foreman': }
+  foreman::cli::plugin { 'foreman_templates': }
   include ::foreman::compute::libvirt
   include ::foreman::plugin::discovery
   include ::foreman::plugin::hooks
@@ -26,20 +28,13 @@ class profile::foreman (
   Class['foreman::repo']
   -> Foreman::Plugin <| |>
 
+  Class['foreman::repo']
+  -> Foreman::Cli::Plugin <| |>
+
   class { '::puppet':
     server                => true,
     server_external_nodes => '',
   }
-
-  foreman::cli::plugin { 'foreman':
-    require => Class['foreman::repo'],
-    version => 'latest',
-  }
-  foreman::cli::plugin { 'foreman_templates':
-    require => Class['foreman::repo'],
-    version => 'latest',
-  }
-
 
   $settings.each |$setting, $value| {
     foreman_config_entry { $setting:
