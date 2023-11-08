@@ -18,9 +18,7 @@ foreman_proxy::plugin::version: latest
 
 foreman_proxy::bmc: true
 foreman_proxy::dhcp: true
-foreman_proxy::dhcp_gateway: "192.168.3.1"
-foreman_proxy::dhcp_nameservers: "192.168.3.1"
-foreman_proxy::dhcp_range: "192.168.3.200 192.168.3.220"
+foreman_proxy::dns: true
 foreman_proxy::tftp: true
 
 foreman_proxy::plugin::discovery::install_images: true
