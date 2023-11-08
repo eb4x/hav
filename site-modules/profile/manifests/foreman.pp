@@ -31,16 +31,11 @@ class profile::foreman (
   Class['foreman::repo']
   -> Foreman::Cli::Plugin <| |>
 
+  create_resources('foreman_config_entry', $settings, { require => Class['foreman::database'] })
+
   class { '::puppet':
     server                => true,
     server_external_nodes => '',
-  }
-
-  $settings.each |$setting, $value| {
-    foreman_config_entry { $setting:
-      value   => $value,
-      require => Class['foreman::database'],
-    }
   }
 
   case $::osfamily {

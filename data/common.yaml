@@ -50,17 +50,25 @@ dhcp::hosts:
 
 profile::foreman::settings:
   # General
-  entries_per_page: 100
+  entries_per_page:
+    value: 100
   #Provision
-  destroy_vm_on_host_delete: true
-  use_shortname_for_vms: true
+  destroy_vm_on_host_delete:
+    value: true
+  use_shortname_for_vms:
+    value: true
   #Puppet
-  create_new_host_when_facts_are_uploaded: false
-  create_new_host_when_report_is_uploaded: false
-  default_location: 'Default Location'
-  default_organization: 'Default Organization'
+  create_new_host_when_facts_are_uploaded:
+    value: false
+  create_new_host_when_report_is_uploaded:
+    value: false
+  default_location:
+    value: 'Default Location'
+  default_organization:
+    value: 'Default Organization'
   #Authentication
-  idle_timeout: 180
+  idle_timeout:
+    value: 180
 
 profile::puppetserver::r10k_sources:
   puppet-project: "https://github.com/eb4x/puppet-project.git"
