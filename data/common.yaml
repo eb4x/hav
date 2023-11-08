@@ -2,6 +2,7 @@
 
 redis::bind: '127.0.0.1'
 
+foreman::repo::repo: '2.5'
 foreman::cli::version: latest
 foreman::cli::plugin::version: latest
 

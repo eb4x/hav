@@ -14,17 +14,7 @@ class profile::foreman (
   String $db_password = 'changeme',
 ) {
 
-  class { '::foreman::repo':
-    repo => '2.5',
-    before => [
-      Class['certs'],
-      Class['foreman'],
-      Class['foreman::cli'],
-      Class['foreman_proxy'],
-      Class['katello'],
-      Package['katello-debug'],
-    ],
-  }
+  include ::foreman::repo
 
   class { '::puppet':
     server                => true,
