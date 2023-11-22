@@ -50,7 +50,9 @@ profile::foreman::settings:
   # General
   entries_per_page:
     value: 100
-  #Provision
+  #Provisioning
+  default_pxe_item_global:
+    value: discovery
   destroy_vm_on_host_delete:
     value: true
   use_shortname_for_vms:
