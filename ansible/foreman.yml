@@ -1,0 +1,25 @@
+---
+- name: configure foreman
+  hosts:
+    - all
+
+  vars:
+    foreman_auth: &foreman_auth
+      username: admin
+      password: changeme
+      server_url: "https://{{ ansible_facts.fqdn }}"
+      validate_certs: false
+
+  tasks:
+    - name: "Press the \"Build PXE Default\" button"
+      uri:
+        force_basic_auth: true
+        url_username: "{{ foreman_auth.username }}"
+        url_password: "{{ foreman_auth.password }}"
+        validate_certs: "{{ foreman_auth.validate_certs | default(omit) }}"
+        url: "{{ foreman_auth.server_url }}/api/provisioning_templates/build_pxe_default"
+        method: POST
+        body_format: json
+        body:
+          provisioning_template: {}
+      changed_when: true
