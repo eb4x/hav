@@ -1,7 +1,20 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# vagrant plugin install vagrant-libvirt
+# export VAGRANT_DEFAULT_PROVIDER=libvirt
+
+# vagrant plugin install vagrant-hostmanager
+# /etc/sudoers.d/vagrant_hostmanager
+# Cmnd_Alias VAGRANT_HOSTMANAGER_UPDATE = /bin/cp <home-directory>/.vagrant.d/tmp/hosts.local /etc/hosts
+# %<admin-group> ALL=(root) NOPASSWD: VAGRANT_HOSTMANAGER_UPDATE
+
 Vagrant.configure("2") do |config|
+
+  # Allow messing with the hypervisor /etc/hosts file
+  # for dns
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
 
   config.vm.provider "libvirt" do |lv|
     lv.machine_type = "q35" # qemu-system-x86_64 -machine help
