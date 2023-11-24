@@ -27,6 +27,13 @@
         name:
           - requests
 
+    - name: determine location
+      when: location is not defined
+      set_fact:
+        location: "{{ inventory_hostname | regex_replace(q1, '\\g<location>') }}"
+      vars:
+        q1: '(?P<location>\w+)-(?P<role>\w+)-(?P<instance>\d+)'
+
   tasks:
     - name: "Press the \"Build PXE Default\" button"
       uri:
@@ -105,6 +112,42 @@
           - "{{ foreman_organization }}"
         locations:
           - "{{ foreman_location }}"
+
+    - name: Create/Update subnets
+      vars:
+        _dhcp_interface: "{{ lookup('community.general.hiera', 'foreman_proxy::dhcp_interface location=' ~ location, config_file='hiera.yaml') | replace('-', '_') }}"
+        _dhcp_range: "{{ lookup('community.general.hiera', 'foreman_proxy::dhcp_range location=' ~ location, config_file='hiera.yaml') }}"
+      theforeman.foreman.subnet:
+        <<: *foreman_auth
+        name: "{{ item.name }}"
+        network: "{{ item.network }}"
+        mask: "{{ item.mask }}"
+        gateway: "{{ item.gateway | default(omit) }}"
+        vlanid: "{{ item.vlanid | default(omit) }}"
+        domains: "{{ item.domains | default(omit) }}"
+        ipam: "{{ item.ipam | default(omit) }}"
+        from_ip: "{{ item.from_ip | default(omit) }}"
+        to_ip: "{{ item.to_ip | default(omit) }}"
+        parameters: "{{ item.parameters | default(omit) }}"
+        dhcp_proxy: "{{ item.dhcp_proxy | default(omit) }}"
+        tftp_proxy: "{{ item.tftp_proxy | default(omit) }}"
+        bmc_proxy: "{{ item.bmc_proxy | default(omit) }}"
+      loop:
+        - name: provision
+          domains:
+            - vagrant.local
+          vlanid: 3
+          network: "{{ ansible_facts[_dhcp_interface].ipv4.network }}"
+          mask: "{{ ansible_facts[_dhcp_interface].ipv4.netmask }}"
+          #gateway: "{{ _ipv4.gateway | default(_ipv4.network | ansible.netcommon.ipmath(1)) }}"
+          #ipam: DHCP
+          from_ip: "{{ _dhcp_range | split(' ') | first }}"
+          to_ip: "{{ _dhcp_range | split(' ') | last }}"
+          #parameters:
+          #  - { name: http-proxy, value: "192.168.3.1" }
+          #  - { name: http-proxy-port, value: "8000" }
+          dhcp_proxy: "{{ foreman_smart_proxy }}"
+          tftp_proxy: "{{ foreman_smart_proxy }}"
 
     - name: Configure installation mediums
       theforeman.foreman.installation_medium:
