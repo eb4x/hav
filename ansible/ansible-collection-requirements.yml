@@ -1,0 +1,5 @@
+---
+# Install with
+# ansible-galaxy collection install -r ansible-collection-requirements.yml
+collections:
+  - name: theforeman.foreman

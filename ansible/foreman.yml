@@ -10,6 +10,23 @@
       server_url: "https://{{ ansible_facts.fqdn }}"
       validate_certs: false
 
+    foreman_organization: Default Organization
+    foreman_location: Default Location
+    foreman_smart_proxy: "{{ location }}-admin-01.{{ ansible_facts['domain'] }}"
+
+  pre_tasks:
+    - name: Install pip
+      package:
+        name:
+          - python3-pip
+      become: true
+
+    - name: Install theforeman module requirements
+      pip:
+        extra_args: "--user"
+        name:
+          - requests
+
   tasks:
     - name: "Press the \"Build PXE Default\" button"
       uri:
@@ -23,3 +40,151 @@
         body:
           provisioning_template: {}
       changed_when: true
+
+    - name: Create/Update location
+      theforeman.foreman.location:
+        <<: *foreman_auth
+        name: "{{ foreman_location }}"
+        organizations:
+          - "{{ foreman_organization }}"
+        parameters:
+          # Enable clocksync in Kickstart
+          - { name: ntp-server, value: no.pool.ntp.org }
+          - { name: time-zone,  value: Europe/Oslo }
+
+    - name: Create/Update domain
+      theforeman.foreman.domain:
+        <<: *foreman_auth
+        name: "{{ ansible_facts['domain'] }}"
+
+    - name: Get smartproxies
+      theforeman.foreman.resource_info:
+        <<: *foreman_auth
+        resource: smart_proxies
+        full_details: true
+      register: _smart_proxies
+
+    # No module for this, so we use the rest api
+    - name: "foreman api: list all autosign entries"
+      uri:
+        force_basic_auth: true
+        url_username: "{{ foreman_auth.username }}"
+        url_password: "{{ foreman_auth.password }}"
+        validate_certs: "{{ foreman_auth.validate_certs | default(omit) }}"
+        url: "{{ foreman_auth.server_url }}/api/smart_proxies/{{ _smart_proxies.resources | json_query(proxy_id) }}/autosign"
+        return_content: true
+      vars:
+        proxy_id: "[?name=='{{ foreman_smart_proxy }}'].id | [0]"
+      register: _autosign
+
+    - debug:
+        var: _autosign.json
+
+    - name: "foreman api: create autosign entry"
+      when: not "*." ~ ansible_facts['domain'] in _autosign.json.results
+      uri:
+        force_basic_auth: true
+        url_username: "{{ foreman_auth.username }}"
+        url_password: "{{ foreman_auth.password }}"
+        validate_certs: "{{ foreman_auth.validate_certs | default(omit) }}"
+        url: "{{ foreman_auth.server_url }}/api/smart_proxies/{{ _smart_proxies.resources | json_query(proxy_id) }}/autosign"
+        method: POST
+        body_format: json
+        body:
+          id: "*.{{ ansible_facts['domain'] }}"
+        return_content: true
+      vars:
+        proxy_id: "[?name=='{{ foreman_smart_proxy }}'].id | [0]"
+      changed_when: true
+
+    - name: Create/Update puppet environment
+      theforeman.foreman.puppet_environment:
+        <<: *foreman_auth
+        name: production
+        organizations:
+          - "{{ foreman_organization }}"
+        locations:
+          - "{{ foreman_location }}"
+
+    - name: Configure installation mediums
+      theforeman.foreman.installation_medium:
+        <<: *foreman_auth
+        organizations:
+          - "{{ foreman_organization }}"
+        locations:
+          - "{{ foreman_location }}"
+        name: "{{ item.name }}"
+        os_family: "{{ item.os_family }}"
+        path: "{{ item.path }}"
+      loop:
+        - name: AlmaLinux 8 UiB
+          os_family: Redhat
+          path: https://almalinux.uib.no/$major.$minor/BaseOS/$arch/kickstart
+
+    - name: Create/Update operatingsystems
+      theforeman.foreman.operatingsystem:
+        <<: *foreman_auth
+        name: "{{ item.name }}"
+        major: "{{ item.major }}"
+        minor: "{{ item.minor }}"
+        os_family: "{{ item.os_family }}"
+        architectures:
+          - x86_64
+        media: "{{ item.media }}"
+        password_hash: "{{ item.password_hash | default(omit) }}"
+        ptables: "{{ item.ptables }}"
+        provisioning_templates: "{{ item.provisioning_templates }}"
+      loop:
+        - name: AlmaLinux
+          major: "8"
+          minor: "9"
+          os_family: Redhat
+          media:
+            - AlmaLinux 8 UiB
+          password_hash: SHA256
+          ptables:
+            - Kickstart default
+          provisioning_templates:
+            - Kickstart default
+            - Kickstart default PXELinux
+
+    - name: Assign default templates to operatingsystems
+      theforeman.foreman.os_default_template:
+        <<: *foreman_auth
+        operatingsystem: "{{ item.operatingsystem }}"
+        template_kind: "{{ item.template_kind }}"
+        provisioning_template: "{{ item.provisioning_template }}"
+      loop:
+        - { operatingsystem: AlmaLinux 8, template_kind: provision, provisioning_template: Kickstart default }
+        - { operatingsystem: AlmaLinux 8, template_kind: PXELinux,  provisioning_template: Kickstart default PXELinux }
+
+    - name: Create/Update hostgroups
+      theforeman.foreman.hostgroup:
+        <<: *foreman_auth
+        organizations:
+          - "{{ foreman_organization }}"
+        locations:
+          - "{{ foreman_location }}"
+        environment: production
+        parent: "{{ item.parent | default(omit) }}"
+        name: "{{ item.name }}"
+        architecture: "{{ item.architecture | default(omit) }}"
+        pxe_loader: "{{ item.pxe_loader | default(omit) }}"
+        medium: "{{ item.medium | default(omit) }}"
+        operatingsystem: "{{ item.operatingsystem | default(omit) }}"
+        #provision_method: build
+        ptable: "{{ item.ptable | default(omit) }}"
+        parameters: "{{ item.parameters | default(omit) }}"
+        subnet: provision
+        puppet_ca_proxy: "{{ foreman_smart_proxy }}"
+        puppet_proxy: "{{ foreman_smart_proxy }}"
+      loop:
+        - name: vagrant
+          architecture: x86_64
+          pxe_loader: PXELinux BIOS
+          medium: AlmaLinux 8 UiB
+          operatingsystem: AlmaLinux 8.9
+          ptable: Kickstart default
+          parameters:
+            - { name: enable-puppetlabs-puppet6-repo, parameter_type: boolean, value: true }
+            - { name: kernelcmd, value: "console=tty1 console=ttyS0,115200n8" }
