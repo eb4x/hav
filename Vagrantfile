@@ -47,6 +47,9 @@ Vagrant.configure("2") do |config|
       libvirt__dhcp_enabled: false,
       libvirt__forward_mode: "nat"
 
+    subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
+      rsync__exclude: [".git/", ".r10k/", "modules/"]
+
     subconfig.vm.provision "puppet install", type: "shell",
       privileged: true,
       inline: <<-SHELL
