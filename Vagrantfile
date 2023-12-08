@@ -9,12 +9,48 @@
 # Cmnd_Alias VAGRANT_HOSTMANAGER_UPDATE = /bin/cp <home-directory>/.vagrant.d/tmp/hosts.local /etc/hosts
 # %<admin-group> ALL=(root) NOPASSWD: VAGRANT_HOSTMANAGER_UPDATE
 
+$ztp = <<-SHELL
+  ztp -d
+  addgroup vagrant netedit
+  addgroup vagrant netshow
+  newgrp netedit
+
+  net add bond host1 bond mode 802.3ad
+  net add bond host1 bond slaves swp1
+  net add bond host1 clag id 1
+
+  net add bond host2 bond mode 802.3ad
+  net add bond host2 bond slaves swp2
+  net add bond host2 clag id 2
+
+  net add bridge bridge ports host1,host2
+  net add bridge bridge vids 10,20,30
+  net add bridge bridge pvid 3
+
+  net add interface swp1 alias host1-bond
+  net add interface swp2 alias host2-bond
+  net add interface swp3 alias peerlink
+  net add interface swp4 alias peerlink
+
+  net add bond peerlink bond slaves swp3-4
+
+  if ! [[ $(hostname) =~ ([^-]+)-([^-]+)-([[:digit:]]+) ]]; then
+    echo "Well, this hostname is unexpected."
+    exit 1
+  fi
+
+  parity=$((10#${BASH_REMATCH[3]} % 2))
+  net add clag peer sys-mac 44:38:39:be:ef:aa interface swp3-4 primary backup-ip 10.10.10.$(( 1 + $parity ))
+
+  net commit
+SHELL
+
 Vagrant.configure("2") do |config|
 
   # Allow messing with the hypervisor /etc/hosts file
   # for dns
-  config.hostmanager.enabled = true
-  config.hostmanager.manage_host = true
+  #config.hostmanager.enabled = true
+  #config.hostmanager.manage_host = true
 
   config.vm.provider "libvirt" do |lv|
     lv.machine_type = "q35" # qemu-system-x86_64 -machine help
@@ -60,7 +96,7 @@ Vagrant.configure("2") do |config|
       libvirt__iface_name: "swp1"
 
     subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:02",
+      mac: "44:38:39:00:00:03",
       libvirt__tunnel_type: "udp",
       libvirt__tunnel_local_ip: "127.0.1.1",
       libvirt__tunnel_local_port: "10002",
@@ -68,23 +104,31 @@ Vagrant.configure("2") do |config|
       libvirt__tunnel_port: "10000",
       libvirt__iface_name: "swp2"
 
+    subconfig.vm.network "private_network", auto_config: false,
+      mac: "44:38:39:00:00:05",
+      libvirt__tunnel_type: "udp",
+      libvirt__tunnel_local_ip: "127.0.1.1",
+      libvirt__tunnel_local_port: "10003",
+      libvirt__tunnel_ip: "127.0.1.4",
+      libvirt__tunnel_port: "10003",
+      libvirt__iface_name: "swp3"
+
+    subconfig.vm.network "private_network", auto_config: false,
+      mac: "44:38:39:00:00:07",
+      libvirt__tunnel_type: "udp",
+      libvirt__tunnel_local_ip: "127.0.1.1",
+      libvirt__tunnel_local_port: "10004",
+      libvirt__tunnel_ip: "127.0.1.4",
+      libvirt__tunnel_port: "10004",
+      libvirt__iface_name: "swp4"
+
     subconfig.vm.synced_folder ".", "/vagrant", disabled: true
     #subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
     #  rsync__exclude: [".git/", ".r10k/", "modules/"]
 
     subconfig.vm.provision "ztp", type: "shell",
       privileged: true,
-      inline: <<-SHELL
-        ztp -d
-        addgroup vagrant netedit
-        addgroup vagrant netshow
-        newgrp netedit
-
-        net add vlan 3
-        net add interface swp1 bridge access 3
-        net add interface swp2 bridge access 3
-        net commit
-      SHELL
+      inline: $ztp
 
     #subconfig.vm.provision "puppet install", type: "shell",
     #  privileged: true,
@@ -107,6 +151,68 @@ Vagrant.configure("2") do |config|
     #  SHELL
   end
 
+  config.vm.define "vagrant-leaf-02" do |subconfig|
+    subconfig.vm.hostname = "vagrant-leaf-02.vagrant.local"
+    subconfig.vm.box = "CumulusCommunity/cumulus-vx"
+    #subconfig.vm.box_version = "5.5.1" # no net command
+    #subconfig.vm.box_version = "4.4.5" # dropped broadcom support
+    subconfig.vm.box_version = "4.3.2"
+
+    subconfig.vm.provider "libvirt" do |lv|
+      # Cumulus VX, which requires at least 768MB of RAM
+      # Cumulus VX versions 4.3 and later requires 2 vCPUs
+      # BUT even 1GB doesn't seem enough for the system anymore.
+      lv.memory = 2048
+      lv.cpus = 2
+      lv.disk_bus = "virtio"
+      lv.nic_adapter_count = 54 # 52 for ports and 2 for mgmt and vagrant?
+    end
+
+    subconfig.vm.network "private_network", auto_config: false,
+      mac: "44:38:39:00:00:02",
+      libvirt__tunnel_type: "udp",
+      libvirt__tunnel_local_ip: "127.0.1.4",
+      libvirt__tunnel_local_port: "10001",
+      libvirt__tunnel_ip: "127.0.1.2",
+      libvirt__tunnel_port: "10001",
+      libvirt__iface_name: "swp1"
+
+    subconfig.vm.network "private_network", auto_config: false,
+      mac: "44:38:39:00:00:04",
+      libvirt__tunnel_type: "udp",
+      libvirt__tunnel_local_ip: "127.0.1.4",
+      libvirt__tunnel_local_port: "10002",
+      libvirt__tunnel_ip: "127.0.1.3",
+      libvirt__tunnel_port: "10001",
+      libvirt__iface_name: "swp2"
+
+    subconfig.vm.network "private_network", auto_config: false,
+      mac: "44:38:39:00:00:06",
+      libvirt__tunnel_type: "udp",
+      libvirt__tunnel_local_ip: "127.0.1.4",
+      libvirt__tunnel_local_port: "10003",
+      libvirt__tunnel_ip: "127.0.1.1",
+      libvirt__tunnel_port: "10003",
+      libvirt__iface_name: "swp3"
+
+    subconfig.vm.network "private_network", auto_config: false,
+      mac: "44:38:39:00:00:08",
+      libvirt__tunnel_type: "udp",
+      libvirt__tunnel_local_ip: "127.0.1.4",
+      libvirt__tunnel_local_port: "10004",
+      libvirt__tunnel_ip: "127.0.1.1",
+      libvirt__tunnel_port: "10004",
+      libvirt__iface_name: "swp4"
+
+    subconfig.vm.synced_folder ".", "/vagrant", disabled: true
+    #subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
+    #  rsync__exclude: [".git/", ".r10k/", "modules/"]
+
+    subconfig.vm.provision "ztp", type: "shell",
+      privileged: true,
+      inline: $ztp
+  end
+
   config.vm.define "vagrant-controller-01" do |subconfig|
     subconfig.vm.hostname = "vagrant-controller-01.vagrant.local"
     subconfig.vm.box = "almalinux/8"
@@ -117,12 +223,40 @@ Vagrant.configure("2") do |config|
     end
 
     subconfig.vm.network "private_network", auto_config: false,
+      mac: "52:54:00:ab:cd:01",
       libvirt__tunnel_type: "udp",
       libvirt__tunnel_local_ip: "127.0.1.2",
       libvirt__tunnel_local_port: "10000",
       libvirt__tunnel_ip: "127.0.1.1",
       libvirt__tunnel_port: "10001",
-      libvirt__iface_name: "sfp0"
+      libvirt__iface_name: "eth1"
+
+    subconfig.vm.network "private_network", auto_config: false,
+      mac: "52:54:00:ab:cd:02",
+      libvirt__tunnel_type: "udp",
+      libvirt__tunnel_local_ip: "127.0.1.2",
+      libvirt__tunnel_local_port: "10001",
+      libvirt__tunnel_ip: "127.0.1.4",
+      libvirt__tunnel_port: "10001",
+      libvirt__iface_name: "eth2"
+
+    subconfig.vm.provision "nmcli", type: "shell",
+      privileged: true,
+      inline: <<-SHELL
+        dnf install -y bash-completion lldpd vim
+        sed -i 's/^LLDPD_OPTIONS=.*/LLDPD_OPTIONS="-I eth1,eth2"/' /etc/sysconfig/lldpd
+        systemctl enable --now lldpd
+
+        # Fix missing speed for lacp
+        ethtool -s eth1 speed 1000 duplex full
+        ethtool -s eth2 speed 1000 duplex full
+
+        nmcli con
+        nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.28.0.101/24'
+        nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
+        nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
+
+      SHELL
   end
 
   config.vm.define "vagrant-controller-02" do |subconfig|
@@ -135,15 +269,42 @@ Vagrant.configure("2") do |config|
     end
 
     subconfig.vm.network "private_network", auto_config: false,
+      mac: "52:54:00:ef:00:01",
       libvirt__tunnel_type: "udp",
       libvirt__tunnel_local_ip: "127.0.1.3",
       libvirt__tunnel_local_port: "10000",
       libvirt__tunnel_ip: "127.0.1.1",
       libvirt__tunnel_port: "10002",
-      libvirt__iface_name: "sfp0"
+      libvirt__iface_name: "eth1"
+
+    subconfig.vm.network "private_network", auto_config: false,
+      mac: "52:54:00:ef:00:02",
+      libvirt__tunnel_type: "udp",
+      libvirt__tunnel_local_ip: "127.0.1.3",
+      libvirt__tunnel_local_port: "10001",
+      libvirt__tunnel_ip: "127.0.1.4",
+      libvirt__tunnel_port: "10002",
+      libvirt__iface_name: "eth2"
+
+    subconfig.vm.provision "nmcli", type: "shell",
+      privileged: true,
+      inline: <<-SHELL
+        dnf install -y bash-completion lldpd vim
+        sed -i 's/^LLDPD_OPTIONS=.*/LLDPD_OPTIONS="-I eth1,eth2"/' /etc/sysconfig/lldpd
+        systemctl enable --now lldpd
+
+        # Fix missing speed for lacp
+        ethtool -s eth1 speed 1000 duplex full
+        ethtool -s eth2 speed 1000 duplex full
+
+        nmcli con
+        nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.28.0.102/24'
+        nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
+        nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
+      SHELL
   end
 
-  config.vm.define "vagrant-admin-01" do |subconfig|
+  config.vm.define "vagrant-admin-01", autostart: false do |subconfig|
     subconfig.vm.hostname = "vagrant-admin-01.vagrant.local"
     subconfig.vm.box = "almalinux/8"
 
