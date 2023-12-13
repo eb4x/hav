@@ -9,6 +9,8 @@
 # Cmnd_Alias VAGRANT_HOSTMANAGER_UPDATE = /bin/cp <home-directory>/.vagrant.d/tmp/hosts.local /etc/hosts
 # %<admin-group> ALL=(root) NOPASSWD: VAGRANT_HOSTMANAGER_UPDATE
 
+require 'yaml'
+
 $ztp = <<-SHELL
   ztp -d
   addgroup vagrant netedit
@@ -166,95 +168,50 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.vm.define "vagrant-controller-01" do |subconfig|
-    subconfig.vm.hostname = "vagrant-controller-01.vagrant.local"
-    subconfig.vm.box = "almalinux/8"
+  yaml = YAML.load_file('nodes.yaml')
 
-    subconfig.vm.provider "libvirt" do |lv|
-      lv.cpus = 4
-      lv.memory = 8192
+  yaml['nodes'].each_with_index do |node, node_idx|
+    # They start with index at 0, but we want from 1
+    leaf_pair = (node_idx / 48) + 1
+    node_idx = (node_idx % 48) + 1
+
+    zero_prefixed_node_idx = sprintf('%02d', node_idx)
+
+    config.vm.define "#{node['name']}" do |subconfig|
+      subconfig.vm.hostname = "#{node['name']}.vagrant.local"
+      subconfig.vm.box = "almalinux/8"
+
+      (1..2).each do |port_idx|
+        zero_prefixed_leaf_idx = sprintf('%02d', (leaf_pair * 2 - 1) + port_idx - 1)
+        zero_prefixed_port_idx = sprintf('%02d', port_idx)
+
+        subconfig.vm.network "private_network", auto_config: false,
+          mac: "52:54:00:#{zero_prefixed_leaf_idx}:#{zero_prefixed_node_idx}:#{zero_prefixed_port_idx}",
+          libvirt__tunnel_type: "udp",
+          libvirt__tunnel_local_ip: "127.0.1.#{leaf_pair * (port_idx * 2)}",
+          libvirt__tunnel_local_port: "100#{zero_prefixed_node_idx}",
+          libvirt__tunnel_ip: "127.0.1.#{leaf_pair * (port_idx * 2) - 1}",
+          libvirt__tunnel_port: "100#{zero_prefixed_node_idx}",
+          libvirt__iface_name: "eth#{port_idx}"
+      end
+
+      subconfig.vm.provision "nmcli", type: "shell",
+        privileged: true,
+        inline: <<-SHELL
+          dnf install -y bash-completion lldpd vim
+          sed -i 's/^LLDPD_OPTIONS=.*/LLDPD_OPTIONS="-I eth1,eth2"/' /etc/sysconfig/lldpd
+          systemctl enable --now lldpd
+
+          # Fix missing speed for lacp
+          ethtool -s eth1 speed 1000 duplex full
+          ethtool -s eth2 speed 1000 duplex full
+
+          nmcli con
+          nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.28.0.1#{zero_prefixed_node_idx}/24'
+          nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
+          nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
+        SHELL
     end
-
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "52:54:00:ab:cd:01",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.2",
-      libvirt__tunnel_local_port: "10001",
-      libvirt__tunnel_ip: "127.0.1.1",
-      libvirt__tunnel_port: "10001",
-      libvirt__iface_name: "eth1"
-
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "52:54:00:ab:cd:02",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.4",
-      libvirt__tunnel_local_port: "10001",
-      libvirt__tunnel_ip: "127.0.1.3",
-      libvirt__tunnel_port: "10001",
-      libvirt__iface_name: "eth2"
-
-    subconfig.vm.provision "nmcli", type: "shell",
-      privileged: true,
-      inline: <<-SHELL
-        dnf install -y bash-completion lldpd vim
-        sed -i 's/^LLDPD_OPTIONS=.*/LLDPD_OPTIONS="-I eth1,eth2"/' /etc/sysconfig/lldpd
-        systemctl enable --now lldpd
-
-        # Fix missing speed for lacp
-        ethtool -s eth1 speed 1000 duplex full
-        ethtool -s eth2 speed 1000 duplex full
-
-        nmcli con
-        nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.28.0.101/24'
-        nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
-        nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
-
-      SHELL
-  end
-
-  config.vm.define "vagrant-controller-02" do |subconfig|
-    subconfig.vm.hostname = "vagrant-controller-02.vagrant.local"
-    subconfig.vm.box = "almalinux/8"
-
-    subconfig.vm.provider "libvirt" do |lv|
-      lv.cpus = 4
-      lv.memory = 8192
-    end
-
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "52:54:00:ef:00:01",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.2",
-      libvirt__tunnel_local_port: "10002",
-      libvirt__tunnel_ip: "127.0.1.1",
-      libvirt__tunnel_port: "10002",
-      libvirt__iface_name: "eth1"
-
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "52:54:00:ef:00:02",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.4",
-      libvirt__tunnel_local_port: "10002",
-      libvirt__tunnel_ip: "127.0.1.3",
-      libvirt__tunnel_port: "10002",
-      libvirt__iface_name: "eth2"
-
-    subconfig.vm.provision "nmcli", type: "shell",
-      privileged: true,
-      inline: <<-SHELL
-        dnf install -y bash-completion lldpd vim
-        sed -i 's/^LLDPD_OPTIONS=.*/LLDPD_OPTIONS="-I eth1,eth2"/' /etc/sysconfig/lldpd
-        systemctl enable --now lldpd
-
-        # Fix missing speed for lacp
-        ethtool -s eth1 speed 1000 duplex full
-        ethtool -s eth2 speed 1000 duplex full
-
-        nmcli con
-        nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.28.0.102/24'
-        nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
-        nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
-      SHELL
   end
 
   config.vm.define "vagrant-admin-01", autostart: false do |subconfig|

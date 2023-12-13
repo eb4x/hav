@@ -1,0 +1,7 @@
+---
+nodes:
+  - name: vagrant-controller-01
+  - name: vagrant-controller-02
+  - name: vagrant-controller-03
+  - name: vagrant-compute-01
+  - name: vagrant-compute-02
