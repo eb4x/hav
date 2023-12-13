@@ -15,24 +15,20 @@ $ztp = <<-SHELL
   addgroup vagrant netshow
   newgrp netedit
 
-  net add bond host1 bond mode 802.3ad
-  net add bond host1 bond slaves swp1
-  net add bond host1 clag id 1
+  for i in {1..48}; do
+    net add bond host${i} bond mode 802.3ad
+    net add bond host${i} bond slaves swp${i}
+    net add bond host${i} clag id ${i}
+  done
 
-  net add bond host2 bond mode 802.3ad
-  net add bond host2 bond slaves swp2
-  net add bond host2 clag id 2
-
-  net add bridge bridge ports host1,host2
+  net add bridge bridge ports host1-48
   net add bridge bridge vids 10,20,30
   net add bridge bridge pvid 3
 
-  net add interface swp1 alias host1-bond
-  net add interface swp2 alias host2-bond
-  net add interface swp3 alias peerlink
-  net add interface swp4 alias peerlink
+  net add interface swp49 alias peerlink
+  net add interface swp50 alias peerlink
 
-  net add bond peerlink bond slaves swp3-4
+  net add bond peerlink bond slaves swp49-50
 
   if ! [[ $(hostname) =~ ([^-]+)-([^-]+)-([[:digit:]]+) ]]; then
     echo "Well, this hostname is unexpected."
@@ -40,7 +36,7 @@ $ztp = <<-SHELL
   fi
 
   parity=$((10#${BASH_REMATCH[3]} % 2))
-  net add clag peer sys-mac 44:38:39:be:ef:aa interface swp3-4 primary backup-ip 10.10.10.$(( 1 + $parity ))
+  net add clag peer sys-mac 44:38:39:be:ef:aa interface swp49-50 primary backup-ip 10.10.10.$(( 1 + $parity ))
 
   net commit
 SHELL
@@ -69,6 +65,17 @@ Vagrant.configure("2") do |config|
     lv.video_type = "virtio"
   end
 
+  # Network concept
+  #
+  # Each switch gets a 127.0.x.y address (where y is an odd number)
+  # Each switch connects to 127.0.x.z address (where z is a even number)
+  #  Henceforth called "the tail end"
+  # and a port number representing the swp.
+
+  # Each host can be represented by a single port number,
+  # on "the tail end" (127.0.x.z) of both switches.
+  # Incrementing the port number between each host.
+
   config.vm.define "vagrant-leaf-01" do |subconfig|
     subconfig.vm.hostname = "vagrant-leaf-01.vagrant.local"
     subconfig.vm.box = "CumulusCommunity/cumulus-vx"
@@ -86,41 +93,42 @@ Vagrant.configure("2") do |config|
       lv.nic_adapter_count = 54 # 52 for ports and 2 for mgmt and vagrant?
     end
 
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:01",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.1",
-      libvirt__tunnel_local_port: "10001",
-      libvirt__tunnel_ip: "127.0.1.2",
-      libvirt__tunnel_port: "10000",
-      libvirt__iface_name: "swp1"
+    # Notes about mac addressing.
+    #
+    # * The last byte is a zero-index to the port number
+    #   (normally these would be hexits, and include a-f,
+    #    but I'm a human more familiar with base10. The other
+    #    benefit is that it works with udp port numbers, which
+    #    are base10.
+    # * The second to last byte, represents the switch instance.
 
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:03",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.1",
-      libvirt__tunnel_local_port: "10002",
-      libvirt__tunnel_ip: "127.0.1.3",
-      libvirt__tunnel_port: "10000",
-      libvirt__iface_name: "swp2"
+    # hosts
+    (1..48).each do |idx|
+      zero_idx = sprintf('%02d', idx)
 
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:05",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.1",
-      libvirt__tunnel_local_port: "10003",
-      libvirt__tunnel_ip: "127.0.1.4",
-      libvirt__tunnel_port: "10003",
-      libvirt__iface_name: "swp3"
+      subconfig.vm.network "private_network", auto_config: false,
+        mac: "44:38:39:00:01:#{zero_idx}",
+        libvirt__tunnel_type: "udp",
+        libvirt__tunnel_local_ip: "127.0.1.1",
+        libvirt__tunnel_local_port: "100#{zero_idx}",
+        libvirt__tunnel_ip: "127.0.1.2",
+        libvirt__tunnel_port: "100#{zero_idx}",
+        libvirt__iface_name: "swp#{idx}"
+    end
 
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:07",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.1",
-      libvirt__tunnel_local_port: "10004",
-      libvirt__tunnel_ip: "127.0.1.4",
-      libvirt__tunnel_port: "10004",
-      libvirt__iface_name: "swp4"
+    # peerlink
+    (49..50).each do |idx|
+      zero_idx = sprintf('%02d', idx)
+
+      subconfig.vm.network "private_network", auto_config: false,
+        mac: "44:38:39:00:01:#{zero_idx}",
+        libvirt__tunnel_type: "udp",
+        libvirt__tunnel_local_ip: "127.0.1.1",
+        libvirt__tunnel_local_port: "100#{zero_idx}",
+        libvirt__tunnel_ip: "127.0.1.3",
+        libvirt__tunnel_port: "100#{zero_idx}",
+        libvirt__iface_name: "swp#{idx}"
+    end
 
     subconfig.vm.synced_folder ".", "/vagrant", disabled: true
     #subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
@@ -168,41 +176,32 @@ Vagrant.configure("2") do |config|
       lv.nic_adapter_count = 54 # 52 for ports and 2 for mgmt and vagrant?
     end
 
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:02",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.4",
-      libvirt__tunnel_local_port: "10001",
-      libvirt__tunnel_ip: "127.0.1.2",
-      libvirt__tunnel_port: "10001",
-      libvirt__iface_name: "swp1"
+    (1..48).each do |idx|
+      zero_idx = sprintf('%02d', idx)
 
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:04",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.4",
-      libvirt__tunnel_local_port: "10002",
-      libvirt__tunnel_ip: "127.0.1.3",
-      libvirt__tunnel_port: "10001",
-      libvirt__iface_name: "swp2"
+      subconfig.vm.network "private_network", auto_config: false,
+        mac: "44:38:39:00:02:#{zero_idx}",
+        libvirt__tunnel_type: "udp",
+        libvirt__tunnel_local_ip: "127.0.1.3",
+        libvirt__tunnel_local_port: "100#{zero_idx}",
+        libvirt__tunnel_ip: "127.0.1.4",
+        libvirt__tunnel_port: "100#{zero_idx}",
+        libvirt__iface_name: "swp#{idx}"
+    end
 
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:06",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.4",
-      libvirt__tunnel_local_port: "10003",
-      libvirt__tunnel_ip: "127.0.1.1",
-      libvirt__tunnel_port: "10003",
-      libvirt__iface_name: "swp3"
+    # peerlink
+    (49..50).each do |idx|
+      zero_idx = sprintf('%02d', idx)
 
-    subconfig.vm.network "private_network", auto_config: false,
-      mac: "44:38:39:00:00:08",
-      libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.4",
-      libvirt__tunnel_local_port: "10004",
-      libvirt__tunnel_ip: "127.0.1.1",
-      libvirt__tunnel_port: "10004",
-      libvirt__iface_name: "swp4"
+      subconfig.vm.network "private_network", auto_config: false,
+        mac: "44:38:39:00:02:#{zero_idx}",
+        libvirt__tunnel_type: "udp",
+        libvirt__tunnel_local_ip: "127.0.1.3",
+        libvirt__tunnel_local_port: "100#{zero_idx}",
+        libvirt__tunnel_ip: "127.0.1.1",
+        libvirt__tunnel_port: "100#{zero_idx}",
+        libvirt__iface_name: "swp#{idx}"
+    end
 
     subconfig.vm.synced_folder ".", "/vagrant", disabled: true
     #subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
@@ -226,7 +225,7 @@ Vagrant.configure("2") do |config|
       mac: "52:54:00:ab:cd:01",
       libvirt__tunnel_type: "udp",
       libvirt__tunnel_local_ip: "127.0.1.2",
-      libvirt__tunnel_local_port: "10000",
+      libvirt__tunnel_local_port: "10001",
       libvirt__tunnel_ip: "127.0.1.1",
       libvirt__tunnel_port: "10001",
       libvirt__iface_name: "eth1"
@@ -234,9 +233,9 @@ Vagrant.configure("2") do |config|
     subconfig.vm.network "private_network", auto_config: false,
       mac: "52:54:00:ab:cd:02",
       libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.2",
+      libvirt__tunnel_local_ip: "127.0.1.4",
       libvirt__tunnel_local_port: "10001",
-      libvirt__tunnel_ip: "127.0.1.4",
+      libvirt__tunnel_ip: "127.0.1.3",
       libvirt__tunnel_port: "10001",
       libvirt__iface_name: "eth2"
 
@@ -271,8 +270,8 @@ Vagrant.configure("2") do |config|
     subconfig.vm.network "private_network", auto_config: false,
       mac: "52:54:00:ef:00:01",
       libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.3",
-      libvirt__tunnel_local_port: "10000",
+      libvirt__tunnel_local_ip: "127.0.1.2",
+      libvirt__tunnel_local_port: "10002",
       libvirt__tunnel_ip: "127.0.1.1",
       libvirt__tunnel_port: "10002",
       libvirt__iface_name: "eth1"
@@ -280,9 +279,9 @@ Vagrant.configure("2") do |config|
     subconfig.vm.network "private_network", auto_config: false,
       mac: "52:54:00:ef:00:02",
       libvirt__tunnel_type: "udp",
-      libvirt__tunnel_local_ip: "127.0.1.3",
-      libvirt__tunnel_local_port: "10001",
-      libvirt__tunnel_ip: "127.0.1.4",
+      libvirt__tunnel_local_ip: "127.0.1.4",
+      libvirt__tunnel_local_port: "10002",
+      libvirt__tunnel_ip: "127.0.1.3",
       libvirt__tunnel_port: "10002",
       libvirt__iface_name: "eth2"
 
