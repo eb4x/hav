@@ -67,8 +67,8 @@ Vagrant.configure("2") do |config|
 
   # Network concept
   #
-  # Each switch gets a 127.0.x.y address (where y is an odd number)
-  # Each switch connects to 127.0.x.z address (where z is a even number)
+  # Each switch gets a 127.0.x.y address (where y is an odd number)      idx * 2 -1
+  # Each switch connects to 127.0.x.z address (where z is a even number) idx * 2
   #  Henceforth called "the tail end"
   # and a port number representing the swp.
 
@@ -76,140 +76,94 @@ Vagrant.configure("2") do |config|
   # on "the tail end" (127.0.x.z) of both switches.
   # Incrementing the port number between each host.
 
-  config.vm.define "vagrant-leaf-01" do |subconfig|
-    subconfig.vm.hostname = "vagrant-leaf-01.vagrant.local"
-    subconfig.vm.box = "CumulusCommunity/cumulus-vx"
-    #subconfig.vm.box_version = "5.5.1" # no net command
-    #subconfig.vm.box_version = "4.4.5" # dropped broadcom support
-    subconfig.vm.box_version = "4.3.2"
+  (1..2).each do |leaf_idx|
+    zero_leaf_idx = sprintf('%02d', leaf_idx)
 
-    subconfig.vm.provider "libvirt" do |lv|
-      # Cumulus VX, which requires at least 768MB of RAM
-      # Cumulus VX versions 4.3 and later requires 2 vCPUs
-      # BUT even 1GB doesn't seem enough for the system anymore.
-      lv.memory = 2048
-      lv.cpus = 2
-      lv.disk_bus = "virtio"
-      lv.nic_adapter_count = 54 # 52 for ports and 2 for mgmt and vagrant?
+    config.vm.define "vagrant-leaf-#{zero_leaf_idx}" do |subconfig|
+      subconfig.vm.hostname = "vagrant-leaf-#{zero_leaf_idx}.vagrant.local"
+      subconfig.vm.box = "CumulusCommunity/cumulus-vx"
+      #subconfig.vm.box_version = "5.5.1" # no net command
+      #subconfig.vm.box_version = "4.4.5" # dropped broadcom support
+      subconfig.vm.box_version = "4.3.2"
+
+      subconfig.vm.provider "libvirt" do |lv|
+        # Cumulus VX, which requires at least 768MB of RAM
+        # Cumulus VX versions 4.3 and later requires 2 vCPUs
+        # BUT even 1GB doesn't seem enough for the system anymore.
+        lv.memory = 2048
+        lv.cpus = 2
+        lv.disk_bus = "virtio"
+        lv.nic_adapter_count = 54 # 52 for ports and 2 for mgmt and vagrant?
+      end
+
+      # Notes about mac addressing.
+      #
+      # * 3rd least significant byte, could represent spine instances?
+      # * 2nd least significant byte, represents the leaf instance.
+      # * 1st least significant byte is a zero-index to the port number
+      #   Normally these would be hexits, and include a-f, but when using
+      #   base10. It's human readable, and it can be reused for udp port
+      #   numbers, which are base10.
+
+      # hosts
+      (1..48).each do |port_idx|
+        zero_port_idx = sprintf('%02d', port_idx)
+
+        subconfig.vm.network "private_network", auto_config: false,
+          mac: "44:38:39:00:#{zero_leaf_idx}:#{zero_port_idx}",
+          libvirt__tunnel_type: "udp",
+          libvirt__tunnel_local_ip: "127.0.1.#{leaf_idx * 2 - 1}",
+          libvirt__tunnel_local_port: "100#{zero_port_idx}",
+          libvirt__tunnel_ip: "127.0.1.#{leaf_idx * 2}",
+          libvirt__tunnel_port: "100#{zero_port_idx}",
+          libvirt__iface_name: "swp#{port_idx}"
+      end
+
+      # peerlink
+      (49..50).each do |port_idx|
+        zero_port_idx = sprintf('%02d', port_idx)
+
+        # leaf-01 <-> leaf-02, leaf-03 <-> leaf-04
+        peer_switch_offset = leaf_idx % 2 == 0 ? -2 : 2
+
+        subconfig.vm.network "private_network", auto_config: false,
+          mac: "44:38:39:00:#{zero_leaf_idx}:#{zero_port_idx}",
+          libvirt__tunnel_type: "udp",
+          libvirt__tunnel_local_ip: "127.0.1.#{leaf_idx * 2 - 1}",
+          libvirt__tunnel_local_port: "100#{zero_port_idx}",
+          libvirt__tunnel_ip: "127.0.1.#{leaf_idx * 2 - 1 + peer_switch_offset}",
+          libvirt__tunnel_port: "100#{zero_port_idx}",
+          libvirt__iface_name: "swp#{port_idx}"
+      end
+
+      subconfig.vm.synced_folder ".", "/vagrant", disabled: true
+      #subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
+      #  rsync__exclude: [".git/", ".r10k/", "modules/"]
+
+      subconfig.vm.provision "ztp", type: "shell",
+        privileged: true,
+        inline: $ztp
+
+      #subconfig.vm.provision "puppet install", type: "shell",
+      #  privileged: true,
+      #  inline: <<-SHELL
+      #    codename=$(lsb_release --codename --short)
+
+      #    if [ ! -f /etc/apt/sources.list.d/puppet${PUPPET_MAJ_VERSION:-6}.list ]; then
+      #      wget https://apt.puppet.com/puppet${PUPPET_MAJ_VERSION:-6}-release-${codename}.deb
+      #      sudo dpkg -i puppet${PUPPET_MAJ_VERSION:-6}-release-${codename}.deb
+      #      rm puppet${PUPPET_MAJ_VERSION:-6}-release-${codename}.deb
+      #    fi
+
+      #    # It's a stable enough interface
+      #    echo "Apt::Cmd::Disable-Script-Warning \\"true\\";" > /etc/apt/apt.conf.d/99apt-disable-script-warning
+
+      #    apt update
+      #    apt install -y puppet-agent gcc libc6-dev
+
+      #    /opt/puppetlabs/puppet/bin/gem install r10k -v '<4'
+      #  SHELL
     end
-
-    # Notes about mac addressing.
-    #
-    # * The last byte is a zero-index to the port number
-    #   (normally these would be hexits, and include a-f,
-    #    but I'm a human more familiar with base10. The other
-    #    benefit is that it works with udp port numbers, which
-    #    are base10.
-    # * The second to last byte, represents the switch instance.
-
-    # hosts
-    (1..48).each do |idx|
-      zero_idx = sprintf('%02d', idx)
-
-      subconfig.vm.network "private_network", auto_config: false,
-        mac: "44:38:39:00:01:#{zero_idx}",
-        libvirt__tunnel_type: "udp",
-        libvirt__tunnel_local_ip: "127.0.1.1",
-        libvirt__tunnel_local_port: "100#{zero_idx}",
-        libvirt__tunnel_ip: "127.0.1.2",
-        libvirt__tunnel_port: "100#{zero_idx}",
-        libvirt__iface_name: "swp#{idx}"
-    end
-
-    # peerlink
-    (49..50).each do |idx|
-      zero_idx = sprintf('%02d', idx)
-
-      subconfig.vm.network "private_network", auto_config: false,
-        mac: "44:38:39:00:01:#{zero_idx}",
-        libvirt__tunnel_type: "udp",
-        libvirt__tunnel_local_ip: "127.0.1.1",
-        libvirt__tunnel_local_port: "100#{zero_idx}",
-        libvirt__tunnel_ip: "127.0.1.3",
-        libvirt__tunnel_port: "100#{zero_idx}",
-        libvirt__iface_name: "swp#{idx}"
-    end
-
-    subconfig.vm.synced_folder ".", "/vagrant", disabled: true
-    #subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
-    #  rsync__exclude: [".git/", ".r10k/", "modules/"]
-
-    subconfig.vm.provision "ztp", type: "shell",
-      privileged: true,
-      inline: $ztp
-
-    #subconfig.vm.provision "puppet install", type: "shell",
-    #  privileged: true,
-    #  inline: <<-SHELL
-    #    codename=$(lsb_release --codename --short)
-
-    #    if [ ! -f /etc/apt/sources.list.d/puppet${PUPPET_MAJ_VERSION:-6}.list ]; then
-    #      wget https://apt.puppet.com/puppet${PUPPET_MAJ_VERSION:-6}-release-${codename}.deb
-    #      sudo dpkg -i puppet${PUPPET_MAJ_VERSION:-6}-release-${codename}.deb
-    #      rm puppet${PUPPET_MAJ_VERSION:-6}-release-${codename}.deb
-    #    fi
-
-    #    # It's a stable enough interface
-    #    echo "Apt::Cmd::Disable-Script-Warning \\"true\\";" > /etc/apt/apt.conf.d/99apt-disable-script-warning
-
-    #    apt update
-    #    apt install -y puppet-agent gcc libc6-dev
-
-    #    /opt/puppetlabs/puppet/bin/gem install r10k -v '<4'
-    #  SHELL
-  end
-
-  config.vm.define "vagrant-leaf-02" do |subconfig|
-    subconfig.vm.hostname = "vagrant-leaf-02.vagrant.local"
-    subconfig.vm.box = "CumulusCommunity/cumulus-vx"
-    #subconfig.vm.box_version = "5.5.1" # no net command
-    #subconfig.vm.box_version = "4.4.5" # dropped broadcom support
-    subconfig.vm.box_version = "4.3.2"
-
-    subconfig.vm.provider "libvirt" do |lv|
-      # Cumulus VX, which requires at least 768MB of RAM
-      # Cumulus VX versions 4.3 and later requires 2 vCPUs
-      # BUT even 1GB doesn't seem enough for the system anymore.
-      lv.memory = 2048
-      lv.cpus = 2
-      lv.disk_bus = "virtio"
-      lv.nic_adapter_count = 54 # 52 for ports and 2 for mgmt and vagrant?
-    end
-
-    (1..48).each do |idx|
-      zero_idx = sprintf('%02d', idx)
-
-      subconfig.vm.network "private_network", auto_config: false,
-        mac: "44:38:39:00:02:#{zero_idx}",
-        libvirt__tunnel_type: "udp",
-        libvirt__tunnel_local_ip: "127.0.1.3",
-        libvirt__tunnel_local_port: "100#{zero_idx}",
-        libvirt__tunnel_ip: "127.0.1.4",
-        libvirt__tunnel_port: "100#{zero_idx}",
-        libvirt__iface_name: "swp#{idx}"
-    end
-
-    # peerlink
-    (49..50).each do |idx|
-      zero_idx = sprintf('%02d', idx)
-
-      subconfig.vm.network "private_network", auto_config: false,
-        mac: "44:38:39:00:02:#{zero_idx}",
-        libvirt__tunnel_type: "udp",
-        libvirt__tunnel_local_ip: "127.0.1.3",
-        libvirt__tunnel_local_port: "100#{zero_idx}",
-        libvirt__tunnel_ip: "127.0.1.1",
-        libvirt__tunnel_port: "100#{zero_idx}",
-        libvirt__iface_name: "swp#{idx}"
-    end
-
-    subconfig.vm.synced_folder ".", "/vagrant", disabled: true
-    #subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
-    #  rsync__exclude: [".git/", ".r10k/", "modules/"]
-
-    subconfig.vm.provision "ztp", type: "shell",
-      privileged: true,
-      inline: $ztp
   end
 
   config.vm.define "vagrant-controller-01" do |subconfig|
