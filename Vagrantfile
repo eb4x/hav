@@ -211,6 +211,10 @@ Vagrant.configure("2") do |config|
           nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
           nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
         SHELL
+
+      subconfig.vm.provision "puppet install", type: "shell", run: "never",
+        privileged: true, env: { "PUPPET_MAJ_VERSION" => "6" },
+        path: "scripts/puppet-install.sh"
     end
   end
 
@@ -233,6 +237,10 @@ Vagrant.configure("2") do |config|
 
     subconfig.vm.provision "puppet install", type: "shell",
       privileged: true,
+      path: "scripts/puppet-install.sh"
+
+    subconfig.vm.provision "foreman deps", type: "shell",
+      privileged: true, keep_color: true,
       inline: <<-SHELL
         source /etc/os-release
         distro_major_version=${VERSION_ID%.*}
@@ -243,14 +251,6 @@ Vagrant.configure("2") do |config|
           dnf module enable -y ruby:2.7
           dnf install -y git vim
         fi
-
-        if [ "${PUPPET_MAJ_VERSION:-6}" -eq 6 ]; then
-          dnf install -y gcc make
-        fi
-
-        rpm -Uvh https://yum.puppet.com/puppet${PUPPET_MAJ_VERSION:-6}-release-el-${distro_major_version}.noarch.rpm
-        dnf install -y puppet-agent
-        /opt/puppetlabs/puppet/bin/gem install r10k -v '<4'
       SHELL
 
     subconfig.vm.provision "puppet modules", type: "shell",
