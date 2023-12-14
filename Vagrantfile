@@ -195,6 +195,9 @@ Vagrant.configure("2") do |config|
           libvirt__iface_name: "eth#{port_idx}"
       end
 
+      subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
+        rsync__exclude: [".git/", ".r10k/", "modules/"]
+
       subconfig.vm.provision "nmcli", type: "shell",
         privileged: true,
         inline: <<-SHELL
