@@ -115,8 +115,8 @@
 
     - name: Create/Update subnets
       vars:
-        _dhcp_interface: "{{ lookup('community.general.hiera', 'foreman_proxy::dhcp_interface location=' ~ location, config_file='hiera.yaml') | replace('-', '_') }}"
-        _dhcp_range: "{{ lookup('community.general.hiera', 'foreman_proxy::dhcp_range location=' ~ location, config_file='hiera.yaml') }}"
+        _dhcp_interface: "{{ lookup('community.general.hiera', 'foreman_proxy::dhcp_interface location=' ~ location, config_file='hiera-v3.yaml') | replace('-', '_') }}"
+        _dhcp_range: "{{ lookup('community.general.hiera', 'foreman_proxy::dhcp_range location=' ~ location, config_file='hiera-v3.yaml') }}"
       theforeman.foreman.subnet:
         <<: *foreman_auth
         name: "{{ item.name }}"

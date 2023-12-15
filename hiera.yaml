@@ -1,13 +1,3 @@
-# hiera.yaml v3
----
-:backends:
-  - yaml
-:yaml:
-   :datadir: data
-:hierarchy:
-  - "sites/%{location}"
-  - common
-
 ---
 version: 5
 defaults:
