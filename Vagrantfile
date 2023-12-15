@@ -227,6 +227,22 @@ Vagrant.configure("2") do |config|
       subconfig.vm.provision "puppet install", type: "shell", run: "never",
         privileged: true, env: { "PUPPET_MAJ_VERSION" => "6" },
         path: "scripts/puppet-install.sh"
+
+      subconfig.vm.provision "puppet modules", type: "shell", run: "never",
+        privileged: false,
+        keep_color: true,
+        inline: <<-SHELL
+          cd /vagrant
+          /opt/puppetlabs/puppet/bin/r10k --verbose=info puppetfile install
+        SHELL
+
+      subconfig.vm.provision "puppet apply", type: "shell", run: "never",
+        privileged: false,
+        keep_color: true,
+        inline: <<-SHELL
+          cd /vagrant
+          sudo /opt/puppetlabs/bin/puppet apply --modulepath site-modules:modules --hiera_config=hiera.yaml manifests/site.pp
+        SHELL
     end
   end
 
