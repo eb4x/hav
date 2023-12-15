@@ -181,6 +181,15 @@ Vagrant.configure("2") do |config|
       subconfig.vm.hostname = "#{node['name']}.vagrant.local"
       subconfig.vm.box = "almalinux/8"
 
+      # /etc/modprobe.d/kvm.conf
+      # modprobe -r kvm_intel; modprobe kvm_intel
+      subconfig.vm.provider "libvirt" do |lv|
+        lv.nested = true
+        #lv.cpu_mode = "custom"
+        #lv.cpu_model = "SandyBridge-IBRS"
+        #lv.cpu_feature name: "vmx", policy: "require"
+      end
+
       (1..2).each do |port_idx|
         zero_prefixed_leaf_idx = sprintf('%02d', (leaf_pair * 2 - 1) + port_idx - 1)
         zero_prefixed_port_idx = sprintf('%02d', port_idx)
