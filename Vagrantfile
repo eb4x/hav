@@ -255,13 +255,51 @@ Vagrant.configure("2") do |config|
       lv.memory = 8192
     end
 
-    subconfig.vm.network "private_network", ip: "172.16.0.10",
-      libvirt__network_name: "provision",
-      libvirt__dhcp_enabled: false,
-      libvirt__forward_mode: "nat"
+    #subconfig.vm.network "private_network", ip: "172.16.0.10",
+    #  libvirt__network_name: "provision",
+    #  libvirt__dhcp_enabled: false,
+    #  libvirt__forward_mode: "nat"
+
+    node_idx = 19
+
+    leaf_pair = (node_idx / 48) + 1
+    node_idx = (node_idx % 48) + 1
+
+    zero_prefixed_node_idx = sprintf('%02d', node_idx)
+
+    (1..2).each do |port_idx|
+      zero_prefixed_leaf_idx = sprintf('%02d', (leaf_pair * 2 - 1) + port_idx - 1)
+      zero_prefixed_port_idx = sprintf('%02d', port_idx)
+
+      subconfig.vm.network "private_network", auto_config: false,
+        mac: "52:54:00:#{zero_prefixed_leaf_idx}:#{zero_prefixed_node_idx}:#{zero_prefixed_port_idx}",
+        libvirt__tunnel_type: "udp",
+        libvirt__tunnel_local_ip: "127.0.1.#{leaf_pair * (port_idx * 2)}",
+        libvirt__tunnel_local_port: "100#{zero_prefixed_node_idx}",
+        libvirt__tunnel_ip: "127.0.1.#{leaf_pair * (port_idx * 2) - 1}",
+        libvirt__tunnel_port: "100#{zero_prefixed_node_idx}",
+        libvirt__iface_name: "eth#{port_idx}"
+    end
 
     subconfig.vm.synced_folder ".", "/vagrant", type: "rsync",
       rsync__exclude: [".git/", ".r10k/", "modules/"]
+
+    subconfig.vm.provision "nmcli", type: "shell",
+      privileged: true,
+      inline: <<-SHELL
+        dnf install -y bash-completion lldpd vim
+        sed -i 's/^LLDPD_OPTIONS=.*/LLDPD_OPTIONS="-I eth1,eth2"/' /etc/sysconfig/lldpd
+        systemctl enable --now lldpd
+
+        # Fix missing speed for lacp
+        ethtool -s eth1 speed 1000 duplex full
+        ethtool -s eth2 speed 1000 duplex full
+
+        nmcli con
+        nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.28.0.10/24'
+        nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
+        nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
+      SHELL
 
     subconfig.vm.provision "puppet install", type: "shell",
       privileged: true,
