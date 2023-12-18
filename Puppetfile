@@ -44,6 +44,6 @@ mod 'augeasproviders_sysctl', :git => 'https://github.com/hercules-team/augeaspr
 
 mod 'choria/mcollective', :git => 'https://github.com/choria-io/puppet-mcollective', :ref => '0.13.4'
 mod 'datacat',            :git => 'https://github.com/richardc/puppet-datacat',      :ref => '0.6.2'
-mod 'libvirt',            :git => 'https://github.com/eb4x/puppet-libvirt',          :ref => 'master'
+mod 'libvirt',            :git => 'https://github.com/thias/puppet-libvirt',         :ref => 'master'
 mod 'network',            :git => 'https://github.com/eb4x/example42-network',       :ref => 'master'
 mod 'systemd',            :git => 'https://github.com/camptocamp/puppet-systemd',    :ref => '2.12.0'

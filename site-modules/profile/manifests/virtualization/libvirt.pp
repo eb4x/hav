@@ -1,20 +1,42 @@
 class profile::virtualization::libvirt (
-  String $auth_tcp = 'none',
   Hash $networks = {},
   Boolean $manage_firewall = true,
 ) {
 
-  class { '::libvirt':
-    auth_tcp => $auth_tcp,
-    networks => $networks,
+  package { 'libvirt':
+    ensure => installed,
   }
+
+  $defaults = {
+    path => '/etc/libvirt/libvirtd.conf',
+    require => Package['libvirt'],
+    notify => Service['libvirtd-tcp'],
+  }
+
+  $libvirtd_conf_settings = {
+    '' => {
+      'listen_tls' => '0',
+      'listen_tcp' => '1',
+      'auth_tcp' => '"none"',
+    }
+  }
+
+  inifile::create_ini_settings($libvirtd_conf_settings, $defaults)
 
   service { 'libvirtd-tcp':
     name => 'libvirtd-tcp.socket',
     enable => true,
     ensure => 'running',
     require => Package['libvirt'],
-    before => Service['libvirtd'],
+  }
+
+  create_resources('::libvirt::network', $networks)
+  # We only want the network creation from libvirt module. But it fails with
+  #   Error: Could not find resource 'Service[libvirtd]' in parameter 'require'
+  #   (file: modules/libvirt/manifests/network.pp, line: 92)
+  # So we declare that here.
+  service { 'libvirtd':
+    require => Package['libvirt'],
   }
 
   if $manage_firewall {
@@ -36,12 +58,16 @@ class profile::virtualization::libvirt (
     }
 
     firewalld_service { 'Virtual Machine Management':
-      ensure  => 'present',
+      ensure  => $libvirtd_conf_settings['']['listen_tcp'] ? {
+        '1' => 'present', '0' => 'absent', default => 'absent'
+      },
       service => 'libvirt',
     }
 
     firewalld_service { 'Virtual Machine Management (TLS)':
-      ensure  => 'present',
+      ensure  => $libvirtd_conf_settings['']['listen_tls'] ? {
+        '1' => 'present', '0' => 'absent', default => 'absent'
+      },
       service => 'libvirt-tls',
     }
   }
