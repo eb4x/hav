@@ -70,6 +70,8 @@ profile::foreman::settings:
   idle_timeout:
     value: 180
 
+puppet::server: true
+puppet::server_external_nodes: ''
 r10k::remote: "https://github.com/eb4x/hav.git"
 
 profile::virtualization::libvirt::networks:

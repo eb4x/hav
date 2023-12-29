@@ -33,11 +33,6 @@ class profile::foreman (
 
   create_resources('foreman_config_entry', $settings, { require => Class['foreman::database'] })
 
-  class { '::puppet':
-    server                => true,
-    server_external_nodes => '',
-  }
-
   case $::osfamily {
     'RedHat': {
       case $::operatingsystemmajrelease {
