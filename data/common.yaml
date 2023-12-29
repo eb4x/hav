@@ -70,8 +70,7 @@ profile::foreman::settings:
   idle_timeout:
     value: 180
 
-profile::puppetserver::r10k_sources:
-  puppet-project: "https://github.com/eb4x/puppet-project.git"
+r10k::remote: "https://github.com/eb4x/hav.git"
 
 profile::virtualization::libvirt::networks:
   default:
