@@ -1,13 +1,3 @@
-# https://github.com/theforeman/foreman-installer/blob/develop/config/katello.yaml
-# order:
-#   - certs
-#   - foreman
-#   - katello
-#   - foreman_proxy
-#   - foreman_proxy::plugin::pulp
-#   - foreman_proxy_content
-#   - puppet
-
 class profile::foreman (
   Hash $settings = {},
 ) {
@@ -18,6 +8,7 @@ class profile::foreman (
   include ::foreman::compute::libvirt
   include ::foreman::plugin::discovery
   include ::foreman::plugin::hooks
+  include ::foreman::plugin::puppet
   include ::foreman::plugin::templates
   include ::foreman::repo
 

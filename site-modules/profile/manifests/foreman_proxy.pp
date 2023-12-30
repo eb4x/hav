@@ -12,7 +12,7 @@ class profile::foreman_proxy (
   Class['foreman::repo']
   -> Class['foreman_proxy::install']
 
-  # temporary fix, https://github.com/theforeman/puppet-foreman_proxy/pull/719
+  # fixed in 21.0.0, https://github.com/theforeman/puppet-foreman_proxy/pull/719
   User[$foreman_proxy::user]
   -> Class['foreman_proxy::proxydhcp']
 

@@ -321,18 +321,6 @@ Vagrant.configure("2") do |config|
       privileged: true,
       path: "scripts/puppet-install.sh"
 
-    subconfig.vm.provision "foreman deps", type: "shell",
-      privileged: true, keep_color: true,
-      inline: <<-SHELL
-        source /etc/os-release
-        distro_major_version=${VERSION_ID%.*}
-        distro_minor_version=${VERSION_ID#*.}
-
-        if [[ $distro_major_version -eq "8" ]]; then
-          dnf module enable -y postgresql:12
-        fi
-      SHELL
-
     subconfig.vm.provision "puppet modules", type: "shell",
       privileged: false, keep_color: true,
       inline: <<-SHELL

@@ -1,0 +1,4 @@
+---
+
+postgresql::globals::manage_dnf_module: true
+postgresql::globals::version: '12'
