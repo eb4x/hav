@@ -2,9 +2,9 @@
 apache::default_vhost: false
 redis::bind: '127.0.0.1'
 
-foreman::repo::repo: '2.5'
-katello::repo::repo_version: '4.1'
-candlepin::repo::version: '4.1'
+foreman::repo::repo: '3.0'
+katello::repo::repo_version: '4.2'
+candlepin::repo::version: '4.2'
 
 foreman::version: latest
 foreman::plugin_version: latest
