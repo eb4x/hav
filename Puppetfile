@@ -14,6 +14,7 @@ mod 'theforeman/dns',      :git => 'https://github.com/theforeman/puppet-dns',  
 mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '4.0.1'
 mod 'theforeman/puppet',   :git => 'https://github.com/theforeman/puppet-puppet',   :ref => '15.0.0'
 mod 'theforeman/tftp',     :git => 'https://github.com/theforeman/puppet-tftp',     :ref => '6.0.0'
+mod 'theforeman/git',      :git => 'https://github.com/theforeman/puppet-git',      :ref => '6.3.0'
 
 mod 'katello/candlepin',             :git => 'https://github.com/theforeman/puppet-candlepin',             :ref => '11.3.0'
 mod 'katello/certs',                 :git => 'https://github.com/theforeman/puppet-certs',                 :ref => '12.0.0'
