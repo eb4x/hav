@@ -218,10 +218,26 @@ Vagrant.configure("2") do |config|
           ethtool -s eth1 speed 1000 duplex full
           ethtool -s eth2 speed 1000 duplex full
 
+          # nmcli connection migrate bond0
+          if sed -i 's/#plugins=ifcfg-rh/plugins=keyfile/' /etc/NetworkManager/NetworkManager.conf; then
+            systemctl restart NetworkManager.service
+          fi
+
           nmcli con
-          nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.28.0.1#{zero_prefixed_node_idx}/24'
+
+          nmcli con add type bridge con-name br-provision ifname br-provision ipv4.method manual ipv4.address '172.22.0.1#{zero_prefixed_node_idx}/24'
+          nmcli con add type bridge con-name br-openstack ifname br-openstack ipv4.method disabled
+          nmcli con add type bridge con-name br-storage   ifname br-storage   ipv4.method disabled
+          nmcli con add type bridge con-name br-tunnel    ifname br-tunnel    ipv4.method disabled
+
+          nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" master br-provision
+
           nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
           nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
+
+          nmcli con add type vlan con-name bond0.10 ifname bond.10 dev bond0 id 10 master br-openstack
+          nmcli con add type vlan con-name bond0.20 ifname bond.20 dev bond0 id 20 master br-storage
+          nmcli con add type vlan con-name bond0.30 ifname bond.30 dev bond0 id 30 master br-tunnel
         SHELL
 
       subconfig.vm.provision "puppet install", type: "shell", run: "never",
@@ -255,7 +271,7 @@ Vagrant.configure("2") do |config|
       lv.memory = 8192
     end
 
-    #subconfig.vm.network "private_network", ip: "172.16.0.10",
+    #subconfig.vm.network "private_network", ip: "172.22.0.10",
     #  libvirt__network_name: "provision",
     #  libvirt__dhcp_enabled: false,
     #  libvirt__forward_mode: "nat"
@@ -296,7 +312,7 @@ Vagrant.configure("2") do |config|
         ethtool -s eth2 speed 1000 duplex full
 
         nmcli con
-        nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.28.0.10/24'
+        nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" ipv4.method manual ipv4.address '172.22.0.10/24'
         nmcli con add type ethernet slave-type bond con-name bond0p0 ifname eth1 master bond0; nmcli con up bond0p0
         nmcli con add type ethernet slave-type bond con-name bond0p1 ifname eth2 master bond0; nmcli con up bond0p1
       SHELL
