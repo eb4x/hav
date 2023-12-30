@@ -12,7 +12,7 @@ mod 'theforeman/puppetserver_foreman',
 mod 'theforeman/dhcp',     :git => 'https://github.com/theforeman/puppet-dhcp',     :ref => '6.2.0'
 mod 'theforeman/dns',      :git => 'https://github.com/theforeman/puppet-dns',      :ref => '8.2.0'
 mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '4.0.1'
-mod 'theforeman/puppet',   :git => 'https://github.com/theforeman/puppet-puppet',   :ref => '15.0.0'
+mod 'theforeman/puppet',   :git => 'https://github.com/eb4x/puppet-puppet',         :ref => '15.0.1' # cherry-pick c4f4ccdc8615e1a234744d99ab202800968efe25 for recursive permissions
 mod 'theforeman/tftp',     :git => 'https://github.com/theforeman/puppet-tftp',     :ref => '6.0.0'
 mod 'theforeman/git',      :git => 'https://github.com/theforeman/puppet-git',      :ref => '6.3.0'
 

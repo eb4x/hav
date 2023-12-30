@@ -72,6 +72,8 @@ profile::foreman::settings:
 
 puppet::server: true
 puppet::server_external_nodes: ''
+puppet::server_common_modules_path: ''
+puppet::server_environments_recurse: true
 r10k::remote: "https://github.com/eb4x/hav.git"
 
 profile::virtualization::libvirt::networks:
