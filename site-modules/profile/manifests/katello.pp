@@ -14,6 +14,18 @@ class profile::katello (
 
   include ::candlepin::repo
 
+  if $facts['os']['selinux']['enabled'] {
+    # Needs fix in candlepin/manifests/artemis.pp
+    Selboolean['candlepin_can_bind_activemq_port']
+    -> Service['tomcat']
+
+    package { 'katello-selinux':
+      ensure => installed,
+      require => Class['katello::repo'],
+      before => Service['foreman'],
+    }
+  }
+
   # XXX Fix pulpcore dependency, maybe fixed in a future release?
   package { 'python3-markuppy':
     ensure => present,
@@ -23,10 +35,4 @@ class profile::katello (
 
   include ::foreman_proxy_content
 
-  selinux::port { 'tomcat_candlepin_port':
-    seltype => 'http_port_t',
-    protocol => 'tcp',
-    port => 23443,
-    before => Service['tomcat'],
-  }
 }
