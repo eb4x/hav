@@ -2,18 +2,17 @@ class profile::katello (
 
 ) {
 
-  class { '::candlepin::repo':
-    version => '4.1',
-  }
-
   include ::katello
   include ::katello::repo
 
   Class['katello::repo']
   -> Class['certs::install', 'katello']
 
+  include ::pulpcore::repo
   Class['pulpcore::repo']
   -> Package['postgresql-evr']
+
+  include ::candlepin::repo
 
   # XXX Fix pulpcore dependency, maybe fixed in a future release?
   package { 'python3-markuppy':
@@ -22,7 +21,6 @@ class profile::katello (
     before => Class['pulpcore'],
   }
 
-  include ::pulpcore::repo
   include ::foreman_proxy_content
 
   selinux::port { 'tomcat_candlepin_port':
