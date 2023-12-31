@@ -330,7 +330,6 @@ Vagrant.configure("2") do |config|
 
         if [[ $distro_major_version -eq "8" ]]; then
           dnf module enable -y postgresql:12
-          dnf module enable -y ruby:2.7
           dnf install -y git vim
         fi
       SHELL
