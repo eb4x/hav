@@ -6,15 +6,11 @@ class profile::katello (
     version => '4.1',
   }
 
-  class { '::katello::repo':
-    repo_version => '4.1',
-    before => [
-      Class['certs'],
-      Class['katello'],
-    ],
-  }
-
   include ::katello
+  include ::katello::repo
+
+  Class['katello::repo']
+  -> Class['certs::install', 'katello']
 
   Class['pulpcore::repo']
   -> Package['postgresql-evr']
