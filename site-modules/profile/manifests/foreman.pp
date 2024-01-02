@@ -14,7 +14,6 @@ class profile::foreman (
 
   include ::foreman
   include ::foreman::cli
-  foreman::cli::plugin { 'foreman': }
   include ::foreman::cli::templates
   include ::foreman::compute::libvirt
   include ::foreman::plugin::discovery
