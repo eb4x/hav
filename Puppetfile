@@ -1,25 +1,25 @@
 mod 'theforeman/foreman',
   :git => 'https://github.com/theforeman/puppet-foreman',
-  :ref => '18.2.0'
+  :ref => '19.2.2'
 mod 'theforeman/foreman_proxy',
   :git => 'https://github.com/theforeman/puppet-foreman_proxy',
-  :ref => '19.0.1'
+  :ref => '20.1.0'
 mod 'theforeman/puppetserver_foreman',
   :git => 'https://github.com/theforeman/puppet-puppetserver_foreman',
   :ref => '2.0.0'
 
-mod 'theforeman/dhcp',     :git => 'https://github.com/theforeman/puppet-dhcp',     :ref => '7.0.0'
-mod 'theforeman/dns',      :git => 'https://github.com/theforeman/puppet-dns',      :ref => '9.0.0'
-mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '5.0.0'
-mod 'theforeman/puppet',   :git => 'https://github.com/eb4x/puppet-puppet',         :ref => '15.1.1' # cherry-pick c4f4ccdc8615e1a234744d99ab202800968efe25 for recursive permissions
+mod 'theforeman/dhcp',     :git => 'https://github.com/theforeman/puppet-dhcp',     :ref => '8.0.0'
+mod 'theforeman/dns',      :git => 'https://github.com/theforeman/puppet-dns',      :ref => '9.1.0'
+mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '5.2.1'
+mod 'theforeman/puppet',   :git => 'https://github.com/eb4x/puppet-puppet',         :ref => '15.2.1' # cherry-pick c4f4ccdc8615e1a234744d99ab202800968efe25 for recursive permissions
 mod 'theforeman/tftp',     :git => 'https://github.com/theforeman/puppet-tftp',     :ref => '7.0.0'
 mod 'theforeman/git',      :git => 'https://github.com/theforeman/puppet-git',      :ref => '7.0.0'
 
-mod 'katello/candlepin',             :git => 'https://github.com/theforeman/puppet-candlepin',             :ref => '12.0.1'
-mod 'katello/certs',                 :git => 'https://github.com/theforeman/puppet-certs',                 :ref => '13.0.0'
-mod 'katello/foreman_proxy_content', :git => 'https://github.com/theforeman/puppet-foreman_proxy_content', :ref => '20.0.0'
-mod 'katello/katello',               :git => 'https://github.com/theforeman/puppet-katello',               :ref => '21.0.0'
-mod 'katello/qpid',                  :git => 'https://github.com/theforeman/puppet-qpid',                  :ref => '9.0.0'
+mod 'katello/candlepin',             :git => 'https://github.com/theforeman/puppet-candlepin',             :ref => '12.1.0'
+mod 'katello/certs',                 :git => 'https://github.com/theforeman/puppet-certs',                 :ref => '15.0.0'
+mod 'katello/foreman_proxy_content', :git => 'https://github.com/theforeman/puppet-foreman_proxy_content', :ref => '20.2.0'
+mod 'katello/katello',               :git => 'https://github.com/theforeman/puppet-katello',               :ref => '21.3.0'
+mod 'katello/qpid',                  :git => 'https://github.com/theforeman/puppet-qpid',                  :ref => '9.1.0'
 
 mod 'apt',                :git => 'https://github.com/puppetlabs/puppetlabs-apt',        :ref => 'v7.7.1'
 mod 'concat',             :git => 'https://github.com/puppetlabs/puppetlabs-concat',     :ref => 'v6.4.0'
@@ -36,6 +36,7 @@ mod 'firewalld',        :git => 'https://github.com/voxpupuli/puppet-firewalld',
 mod 'puppet-r10k',      :git => 'https://github.com/voxpupuli/puppet-r10k',       :ref => 'v10.1.0'
 mod 'redis',            :git => 'https://github.com/voxpupuli/puppet-redis',      :ref => 'v6.1.0'
 mod 'selinux',          :git => 'https://github.com/voxpupuli/puppet-selinux',    :ref => 'v3.4.1'
+mod 'systemd',          :git => 'https://github.com/voxpupuli/puppet-systemd',    :ref => 'v3.10.0'
 mod 'trusted_ca',       :git => 'https://github.com/voxpupuli/puppet-trusted_ca', :ref => 'v3.1.0'
 mod 'voxpupuli/extlib', :git => 'https://github.com/voxpupuli/puppet-extlib',     :ref => 'v5.3.0'
 
@@ -46,4 +47,3 @@ mod 'choria/mcollective', :git => 'https://github.com/choria-io/puppet-mcollecti
 mod 'datacat',            :git => 'https://github.com/richardc/puppet-datacat',      :ref => '0.6.2'
 mod 'libvirt',            :git => 'https://github.com/thias/puppet-libvirt',         :ref => 'master'
 mod 'network',            :git => 'https://github.com/eb4x/example42-network',       :ref => 'master'
-mod 'systemd',            :git => 'https://github.com/camptocamp/puppet-systemd',    :ref => '2.12.0'
