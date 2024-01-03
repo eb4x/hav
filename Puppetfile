@@ -1,24 +1,24 @@
 mod 'theforeman/foreman',
   :git => 'https://github.com/theforeman/puppet-foreman',
-  :ref => '19.2.2'
+  :ref => '20.1.0'
 mod 'theforeman/foreman_proxy',
   :git => 'https://github.com/theforeman/puppet-foreman_proxy',
-  :ref => '21.0.0'
+  :ref => '22.1.3'
 mod 'theforeman/puppetserver_foreman',
   :git => 'https://github.com/theforeman/puppet-puppetserver_foreman',
   :ref => '2.1.0'
 
 mod 'theforeman/dhcp',     :git => 'https://github.com/theforeman/puppet-dhcp',     :ref => '8.1.0'
-mod 'theforeman/dns',      :git => 'https://github.com/theforeman/puppet-dns',      :ref => '9.2.0'
-mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '5.2.1'
-mod 'theforeman/puppet',   :git => 'https://github.com/eb4x/puppet-puppet',         :ref => '16.0.1' # cherry-pick c4f4ccdc8615e1a234744d99ab202800968efe25 for recursive permissions
-mod 'theforeman/tftp',     :git => 'https://github.com/theforeman/puppet-tftp',     :ref => '7.1.0'
-mod 'theforeman/git',      :git => 'https://github.com/theforeman/puppet-git',      :ref => '7.1.0'
+mod 'theforeman/dns',      :git => 'https://github.com/theforeman/puppet-dns',      :ref => '9.3.0'
+mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '6.0.0'
+mod 'theforeman/puppet',   :git => 'https://github.com/eb4x/puppet-puppet',         :ref => '16.2.1' # cherry-pick c4f4ccdc8615e1a234744d99ab202800968efe25 for recursive permissions
+mod 'theforeman/tftp',     :git => 'https://github.com/theforeman/puppet-tftp',     :ref => '7.2.0'
+mod 'theforeman/git',      :git => 'https://github.com/theforeman/puppet-git',      :ref => '7.2.0'
 
-mod 'katello/candlepin',             :git => 'https://github.com/theforeman/puppet-candlepin',             :ref => '12.2.0'
-mod 'katello/certs',                 :git => 'https://github.com/theforeman/puppet-certs',                 :ref => '15.0.0'
-mod 'katello/foreman_proxy_content', :git => 'https://github.com/theforeman/puppet-foreman_proxy_content', :ref => '20.2.0'
-mod 'katello/katello',               :git => 'https://github.com/theforeman/puppet-katello',               :ref => '21.3.0'
+mod 'katello/candlepin',             :git => 'https://github.com/theforeman/puppet-candlepin',             :ref => '12.3.0'
+mod 'katello/certs',                 :git => 'https://github.com/theforeman/puppet-certs',                 :ref => '15.1.1'
+mod 'katello/foreman_proxy_content', :git => 'https://github.com/theforeman/puppet-foreman_proxy_content', :ref => '21.1.1'
+mod 'katello/katello',               :git => 'https://github.com/theforeman/puppet-katello',               :ref => '21.6.0'
 mod 'katello/qpid',                  :git => 'https://github.com/theforeman/puppet-qpid',                  :ref => '9.1.0'
 
 mod 'apt',                :git => 'https://github.com/puppetlabs/puppetlabs-apt',        :ref => 'v7.7.1'
@@ -33,6 +33,7 @@ mod 'stdlib',             :git => 'https://github.com/puppetlabs/puppetlabs-stdl
 mod 'translate',          :git => 'https://github.com/puppetlabs/puppetlabs-translate',  :ref => 'v2.2.0'
 
 mod 'firewalld',        :git => 'https://github.com/voxpupuli/puppet-firewalld',  :ref => 'v4.4.0'
+mod 'puppet/mosquitto', :git => 'https://github.com/voxpupuli/puppet-mosquitto',  :ref => 'v1.2.0'
 mod 'puppet-r10k',      :git => 'https://github.com/voxpupuli/puppet-r10k',       :ref => 'v10.1.0'
 mod 'redis',            :git => 'https://github.com/voxpupuli/puppet-redis',      :ref => 'v6.1.0'
 mod 'selinux',          :git => 'https://github.com/voxpupuli/puppet-selinux',    :ref => 'v3.4.1'
