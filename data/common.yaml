@@ -1,5 +1,5 @@
 ---
-
+apache::default_vhost: false
 redis::bind: '127.0.0.1'
 
 foreman::repo::repo: '2.5'
