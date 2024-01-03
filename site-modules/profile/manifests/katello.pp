@@ -1,11 +1,13 @@
 class profile::katello (
-
 ) {
+
+  include profile::ruby
 
   include ::katello
   include ::katello::repo
 
-  Class['katello::repo']
+  Package['ruby']
+  -> Class['katello::repo']
   -> Class['certs::install', 'katello']
 
   include ::pulpcore::repo

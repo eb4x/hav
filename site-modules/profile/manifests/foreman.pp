@@ -2,6 +2,8 @@ class profile::foreman (
   Hash $settings = {},
 ) {
 
+  include profile::ruby
+
   include ::foreman
   include ::foreman::cli
   include ::foreman::cli::templates
@@ -12,14 +14,12 @@ class profile::foreman (
   include ::foreman::plugin::templates
   include ::foreman::repo
 
-  Class['foreman::repo']
+  Package['ruby']
+  -> Class['foreman::repo']
   -> Class['foreman::install']
 
-  Class['foreman::repo']
-  -> Foreman::Plugin <| |>
-
-  Class['foreman::repo']
-  -> Foreman::Cli::Plugin <| |>
+  Class['foreman::repo'] -> Foreman::Plugin <| |>
+  Class['foreman::repo'] -> Foreman::Cli::Plugin <| |>
 
   create_resources('foreman_config_entry', $settings, { require => Class['foreman::database'] })
 

@@ -2,6 +2,8 @@ class profile::foreman_proxy (
   Hash $dhcp_classes = {},
 ) {
 
+  include profile::ruby
+
   include ::foreman::repo
 
   include ::foreman_proxy
@@ -9,7 +11,8 @@ class profile::foreman_proxy (
 
   create_resources('dhcp::dhcp_class', $dhcp_classes)
 
-  Class['foreman::repo']
+  Package['ruby']
+  -> Class['foreman::repo']
   -> Class['foreman_proxy::install']
 
   # fixed in 21.0.0, https://github.com/theforeman/puppet-foreman_proxy/pull/719
