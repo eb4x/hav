@@ -50,27 +50,28 @@ dhcp::hosts:
 
 profile::foreman::settings:
   # General
-  entries_per_page:
-    value: 100
-  #Provisioning
+#  entries_per_page:
+#    value: 100
+  # Authentication
+#  idle_timeout:
+#    value: 180
+  # Provisioning
   default_pxe_item_global:
     value: discovery
-  destroy_vm_on_host_delete:
-    value: true
-  use_shortname_for_vms:
-    value: true
-  #Puppet
-  create_new_host_when_facts_are_uploaded:
-    value: false
-  create_new_host_when_report_is_uploaded:
-    value: false
+#  destroy_vm_on_host_delete:
+#    value: true
+#  use_shortname_for_vms:
+#    value: true
+  # Facts
+#  create_new_host_when_facts_are_uploaded:
+#    value: false
   default_location:
     value: 'Default Location'
   default_organization:
     value: 'Default Organization'
-  #Authentication
-  idle_timeout:
-    value: 180
+  # Config Management
+#  create_new_host_when_report_is_uploaded:
+#    value: false
 
 puppet::server: true
 puppet::server_external_nodes: ''
