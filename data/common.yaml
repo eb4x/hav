@@ -2,9 +2,9 @@
 apache::default_vhost: false
 redis::bind: '127.0.0.1'
 
-foreman::repo::repo: '3.3'
-katello::repo::repo_version: '4.5'
-candlepin::repo::version: '4.5'
+foreman::repo::repo: '3.4'
+katello::repo::repo_version: '4.6'
+candlepin::repo::version: '4.6'
 
 foreman::version: latest
 foreman::plugin_version: latest
@@ -50,28 +50,28 @@ dhcp::hosts:
 
 profile::foreman::settings:
   # General
-#  entries_per_page:
-#    value: 100
+  entries_per_page:
+    value: 100
   # Authentication
-#  idle_timeout:
-#    value: 180
+  idle_timeout:
+    value: 180
   # Provisioning
   default_pxe_item_global:
     value: discovery
-#  destroy_vm_on_host_delete:
-#    value: true
-#  use_shortname_for_vms:
-#    value: true
+  destroy_vm_on_host_delete:
+    value: true
+  use_shortname_for_vms:
+    value: true
   # Facts
-#  create_new_host_when_facts_are_uploaded:
-#    value: false
+  create_new_host_when_facts_are_uploaded:
+    value: false
   default_location:
     value: 'Default Location'
   default_organization:
     value: 'Default Organization'
   # Config Management
-#  create_new_host_when_report_is_uploaded:
-#    value: false
+  create_new_host_when_report_is_uploaded:
+    value: false
 
 puppet::server: true
 puppet::server_external_nodes: ''
