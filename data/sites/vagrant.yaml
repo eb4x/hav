@@ -3,6 +3,7 @@ foreman_proxy::dhcp_nameservers: "%{facts.networking.interfaces.bond0.ip}"
 #foreman_proxy::dhcp_gateway: 172.22.0.1
 foreman_proxy::dhcp_range: "172.22.0.200 172.22.0.220"
 foreman_proxy::dns_interface: bond0
+foreman_proxy::dns_server: "172.22.0.10"
 foreman_proxy::dns_forwarders:
   - 9.9.9.9
   - 8.8.8.8
