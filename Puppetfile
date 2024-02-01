@@ -1,50 +1,40 @@
-mod 'theforeman/foreman',
-  :git => 'https://github.com/theforeman/puppet-foreman',
-  :ref => '17.0.0'
-mod 'theforeman/foreman_proxy',
-  :git => 'https://github.com/theforeman/puppet-foreman_proxy',
-  :ref => '2af52b188be1e3ca16c47c35d8d78d66509f94b1' # '18.2.0' # cherry-pick 2af52b188be1e3ca16c47c35d8d78d66509f94b1 for almalinux
-mod 'theforeman/puppetserver_foreman',
-  :git => 'https://github.com/theforeman/puppet-puppetserver_foreman',
-  :ref => '1.0.0'
+# Openstack
+mod 'keystone',     :git => 'https://github.com/openstack/puppet-keystone',     :ref => 'ussuri-eol'
+mod 'glance',       :git => 'https://github.com/openstack/puppet-glance',       :ref => 'ussuri-eol'
+mod 'swift',        :git => 'https://github.com/eb4x/puppet-swift',             :ref => 'stable/ussuri'
+mod 'cinder',       :git => 'https://github.com/openstack/puppet-cinder',       :ref => 'ussuri-eol'
+mod 'nova',         :git => 'https://github.com/openstack/puppet-nova',         :ref => 'ussuri-eol'
+mod 'ironic',       :git => 'https://github.com/eb4x/puppet-ironic',            :ref => 'stable/ussuri'
+mod 'placement',    :git => 'https://github.com/openstack/puppet-placement',    :ref => 'ussuri-eol'
+mod 'neutron',      :git => 'https://github.com/openstack/puppet-neutron',      :ref => 'ussuri-eol'
+mod 'vswitch',      :git => 'https://github.com/openstack/puppet-vswitch',      :ref => 'ussuri-eol'
+mod 'horizon',      :git => 'https://github.com/openstack/puppet-horizon',      :ref => 'ussuri-eol'
+mod 'openstacklib', :git => 'https://github.com/openstack/puppet-openstacklib', :ref => 'ussuri-eol'
+mod 'cloudkitty',   :git => 'https://github.com/openstack/puppet-cloudkitty',   :ref => 'ussuri-eol'
+mod 'designate',    :git => 'https://github.com/openstack/puppet-designate' ,   :ref => 'ussuri-eol'
+mod 'oslo',         :git => 'https://github.com/openstack/puppet-oslo',         :ref => 'ussuri-eol'
 
+mod 'puppetlabs/apache',       :git => 'https://github.com/puppetlabs/puppetlabs-apache',     :ref => 'v12.0.2'
+mod 'puppetlabs/apt',          :git => 'https://github.com/puppetlabs/puppetlabs-apt',        :ref => '6.3.0'
+mod 'puppetlabs/concat',       :git => 'https://github.com/puppetlabs/puppetlabs-concat',     :ref => '5.3.0' # '2.2.1'
+mod 'puppetlabs/firewall',     :git => 'https://github.com/puppetlabs/puppetlabs-firewall',   :ref => 'v5.0.0' #'1.8.2'
+mod 'puppetlabs/inifile',      :git => 'https://github.com/puppetlabs/puppetlabs-inifile',    :ref => '2.5.0'
+mod 'puppetlabs/mysql',        :git => 'https://github.com/puppetlabs/puppetlabs-mysql',      :ref => 'v10.10.0'
+mod 'puppetlabs/postgresql',   :git => 'https://github.com/puppetlabs/puppetlabs-postgresql', :ref => '5.12.1'
+mod 'puppetlabs/resource_api', :git => 'https://github.com/eb4x/puppet-resource_api',         :ref => 'stable/1.9'
+mod 'puppetlabs/rsync',        :git => 'https://github.com/puppetlabs/puppetlabs-rsync',      :ref => '1.2.0'
+mod 'puppetlabs/stdlib',       :git => 'https://github.com/puppetlabs/puppetlabs-stdlib',     :ref => '5.2.0'
+mod 'puppetlabs/translate',    :git => 'https://github.com/puppetlabs/puppetlabs-translate',  :ref => '1.2.0'
+mod 'puppetlabs/xinetd',       :git => 'https://github.com/puppetlabs/puppetlabs-xinetd',     :ref => '1.5.0'
 
-mod 'theforeman/dhcp',     :git => 'https://github.com/theforeman/puppet-dhcp',     :ref => '6.2.0'
-mod 'theforeman/dns',      :git => 'https://github.com/theforeman/puppet-dns',      :ref => '8.2.0'
-mod 'theforeman/pulpcore', :git => 'https://github.com/theforeman/puppet-pulpcore', :ref => '4.0.1'
-mod 'theforeman/puppet',   :git => 'https://github.com/eb4x/puppet-puppet',         :ref => '15.0.1' # cherry-pick c4f4ccdc8615e1a234744d99ab202800968efe25 for recursive permissions
-mod 'theforeman/tftp',     :git => 'https://github.com/theforeman/puppet-tftp',     :ref => '6.0.0'
-mod 'theforeman/git',      :git => 'https://github.com/theforeman/puppet-git',      :ref => '6.3.0'
+mod 'voxpupuli/archive',      :git => 'https://github.com/voxpupuli/puppet-archive',      :ref => 'v3.2.1'
+mod 'voxpupuli/git_resource', :git => 'https://github.com/voxpupuli/puppet-git_resource', :ref => 'v1.0.2'
+mod 'voxpupuli/kmod',         :git => 'https://github.com/voxpupuli/puppet-kmod',         :ref => '2.5.0' #'v4.0.1'
+mod 'voxpupuli/rabbitmq',     :git => 'https://github.com/voxpupuli/puppet-rabbitmq',     :ref => 'v8.5.0'
+mod 'voxpupuli/systemd',      :git => 'https://github.com/voxpupuli/puppet-systemd',      :ref => '2.12.0'
 
-mod 'katello/candlepin',             :git => 'https://github.com/theforeman/puppet-candlepin',             :ref => '11.3.0'
-mod 'katello/certs',                 :git => 'https://github.com/theforeman/puppet-certs',                 :ref => '12.0.0'
-mod 'katello/foreman_proxy_content', :git => 'https://github.com/theforeman/puppet-foreman_proxy_content', :ref => '19.0.0'
-mod 'katello/katello',               :git => 'https://github.com/theforeman/puppet-katello',               :ref => '20.0.0'
-mod 'katello/qpid',                  :git => 'https://github.com/theforeman/puppet-qpid',                  :ref => '8.0.0'
-
-mod 'apt',                :git => 'https://github.com/puppetlabs/puppetlabs-apt',        :ref => 'v7.7.1'
-mod 'concat',             :git => 'https://github.com/puppetlabs/puppetlabs-concat',     :ref => 'v6.4.0'
-mod 'firewall',           :git => 'https://github.com/puppetlabs/puppetlabs-firewall',   :ref => '1.8.2'
-mod 'inifile',            :git => 'https://github.com/puppetlabs/puppetlabs-inifile',    :ref => 'v4.4.0'
-mod 'postgresql',         :git => 'https://github.com/puppetlabs/puppetlabs-postgresql', :ref => 'v6.10.2'
-mod 'puppetlabs/apache',  :git => 'https://github.com/puppetlabs/puppetlabs-apache',     :ref => 'v5.10.0'
-mod 'puppetlabs/vcsrepo', :git => 'https://github.com/puppetlabs/puppetlabs-vcsrepo',    :ref => 'v5.0.0'
-mod 'puppetlabs/xinetd',  :git => 'https://github.com/puppetlabs/puppetlabs-xinetd',     :ref => 'v3.3.0'
-mod 'stdlib',             :git => 'https://github.com/puppetlabs/puppetlabs-stdlib',     :ref => 'v6.6.0'
-mod 'translate',          :git => 'https://github.com/puppetlabs/puppetlabs-translate',  :ref => 'v2.2.0'
-
-mod 'firewalld',        :git => 'https://github.com/voxpupuli/puppet-firewalld',  :ref => 'v4.4.0'
-mod 'puppet-r10k',      :git => 'https://github.com/voxpupuli/puppet-r10k',       :ref => 'v10.1.0'
-mod 'redis',            :git => 'https://github.com/voxpupuli/puppet-redis',      :ref => 'v6.1.0'
-mod 'selinux',          :git => 'https://github.com/voxpupuli/puppet-selinux',    :ref => 'v3.4.1'
-mod 'trusted_ca',       :git => 'https://github.com/voxpupuli/puppet-trusted_ca', :ref => 'v3.1.0'
-mod 'voxpupuli/extlib', :git => 'https://github.com/voxpupuli/puppet-extlib',     :ref => 'v5.3.0'
-
-mod 'augeasproviders_core',   :git => 'https://github.com/hercules-team/augeasproviders_core',   :ref => '2.7.0'
-mod 'augeasproviders_sysctl', :git => 'https://github.com/hercules-team/augeasproviders_sysctl', :ref => '2.6.2'
-
-mod 'choria/mcollective', :git => 'https://github.com/choria-io/puppet-mcollective', :ref => '0.13.4'
-mod 'datacat',            :git => 'https://github.com/richardc/puppet-datacat',      :ref => '0.6.2'
-mod 'libvirt',            :git => 'https://github.com/thias/puppet-libvirt',         :ref => 'master'
-mod 'network',            :git => 'https://github.com/eb4x/example42-network',       :ref => 'master'
-mod 'systemd',            :git => 'https://github.com/camptocamp/puppet-systemd',    :ref => '2.12.0'
+mod 'foreman/dns', :git => 'https://github.com/theforeman/puppet-dns',          :ref => '5.4.0'
+mod 'ipaclient',   :git => 'https://github.com/joshuabaird/puppet-ipaclient',   :ref => '2.5.2'
+mod 'memcached',   :git => 'https://github.com/saz/puppet-memcached',           :ref => 'v2.8.1'
+mod 'powerdns',    :git => 'https://github.com/antonlindstrom/puppet-powerdns', :ref => '0.0.5'
+mod 'sysctl',      :git => 'https://github.com/duritong/puppet-sysctl',         :ref => 'v0.0.12'
