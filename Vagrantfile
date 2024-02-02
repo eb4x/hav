@@ -226,9 +226,9 @@ Vagrant.configure("2") do |config|
           nmcli con
 
           nmcli con add type bridge con-name br-provision ifname br-provision ipv4.method manual ipv4.address '172.22.0.1#{zero_prefixed_node_idx}/24'
-          nmcli con add type bridge con-name br-openstack ifname br-openstack ipv4.method disabled
-          nmcli con add type bridge con-name br-storage   ifname br-storage   ipv4.method disabled
-          nmcli con add type bridge con-name br-tunnel    ifname br-tunnel    ipv4.method disabled
+          nmcli con add type bridge con-name br-openstack ifname br-openstack ipv4.method disabled ipv6.method disabled connection.autoconnect yes
+          nmcli con add type bridge con-name br-storage   ifname br-storage   ipv4.method disabled ipv6.method disabled connection.autoconnect yes
+          nmcli con add type bridge con-name br-tunnel    ifname br-tunnel    ipv4.method disabled ipv6.method disabled connection.autoconnect yes
 
           nmcli con add type bond con-name bond0 ifname bond0 mode 802.3ad bond.options "mode=802.3ad,miimon=100" master br-provision
 
