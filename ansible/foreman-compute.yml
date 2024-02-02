@@ -1,0 +1,128 @@
+---
+- name: configure foreman
+  hosts:
+    - all
+
+  vars:
+    foreman_auth: &foreman_auth
+      username: admin
+      password: changeme
+      server_url: "https://{{ ansible_facts.fqdn }}"
+      validate_certs: false
+
+    foreman_organization: Default Organization
+    foreman_location: Default Location
+    foreman_smart_proxy: "{{ location }}-admin-01.{{ ansible_facts['domain'] }}"
+
+  pre_tasks:
+    - name: Determine location
+      when: location is not defined
+      set_fact:
+        location: "{{ inventory_hostname | regex_replace(q1, '\\g<location>') }}"
+      vars:
+        q1: '(?P<location>\w+)-(?P<role>\w+)-(?P<instance>\d+)'
+
+    - debug:
+        var: name
+      vars:
+        name: "{{ item | basename | splitext | first }}"
+        data: "{{ lookup('file', item) | from_yaml }}"
+      loop: "{{ lookup('ansible.builtin.fileglob', '../data/nodes/{{ location }}/{{ location }}-controller-*.yaml', wantlist=True) }}"
+
+    - name: Build controller data
+      set_fact:
+        nodes: "{{ nodes | default([]) + node }}"
+      vars:
+        name: "{{ item | basename | splitext | first }}"
+        data: "{{ lookup('file', item) | from_yaml }}"
+        node:
+          - name: "{{ name }}.{{ ansible_facts['domain'] }}"
+            ip: "{{ data.ip }}"
+            mac: "{{ data.interfaces | json_query('[?name==`eth1`].mac | [0]') }}"
+            interfaces_attributes: "{{ data.interfaces | json_query(convert_to_foreman_interface_attrs) }}"
+            hostgroup: vagrant
+        convert_to_foreman_interface_attrs: "[].{ type: 'interface', identifier: name, mac: mac }"
+      loop: "{{ lookup('ansible.builtin.fileglob', '../data/nodes/{{ location }}/{{ location }}-controller-*.yaml', wantlist=True) }}"
+
+    - debug:
+        var: nodes
+
+  tasks:
+    - name: Create/Update hosts
+      theforeman.foreman.host:
+        <<: *foreman_auth
+        organization: "{{ foreman_organization }}"
+        location: "{{ foreman_location }}"
+        hostgroup: "{{ item.hostgroup | default(omit) }}"
+        name: "{{ item.name }}"
+        architecture: "{{ item.architecture | default(omit) }}"
+        operatingsystem: "{{ item.operatingsystem | default(omit) }}"
+        medium: "{{ item.medium | default(omit) }}"
+        pxe_loader: "{{ item.pxe_loader | default(omit) }}"
+        #provision_method: build
+        #ptable: Kickstart default
+        interfaces_attributes: "{{ item.interfaces_attributes }}"
+        #mac: "{{ item.interfaces_attributes | json_query('[?provision||primary].mac | [0]') }}"
+        ip: "{{ item.ip }}"
+        parameters: "{{ item.parameters | default(omit) }}"
+      loop: "{{ nodes }}"
+        #- name: "vagrant-controller-01.{{ ansible_facts['domain'] }}"
+        #  hostgroup: vagrant
+        #  ip: 192.168.3.100
+        #  interfaces_attributes:
+        #    - { type: interface, identifier: eno1, mac: "c4:34:6b:b5:ad:80", subnet: provision, primary: true }
+        #    - { type: interface, identifier: eno2, mac: "c4:34:6b:b5:ad:81" }
+        #    - { type: interface, identifier: eno3, mac: "c4:34:6b:b5:ad:82" }
+        #    - { type: interface, identifier: eno4, mac: "c4:34:6b:b5:ad:83" }
+        #    - { type: bmc,       identifier: ilo4, mac: "c4:34:6b:bc:4f:2a", subnet: oob, provider: IPMI, username: maas, password: HnmbyJQq7zPgL, ip: 192.168.4.2, managed: false }
+        #    #- { type: interface, identifier: ens3f0, mac: "a0:36:9f:93:86:78" }
+        #    #- { type: interface, identifier: ens3f1, mac: "a0:36:9f:93:86:7a" }
+        #    #- { type: bond, identifier: bond0, mode: 802.3ad, attached_devices: [ eno1, eno2, eno3, eno4 ] }
+        #- name: "local4-controller-02.{{ foreman_domain }}"
+        #  hostgroup: dl380gen8
+        #  ip: 192.168.3.101
+        #  interfaces_attributes:
+        #    - { type: interface, identifier: eno1, mac: "c4:34:6b:b5:ad:4c", subnet: provision, primary: true }
+        #    - { type: interface, identifier: eno2, mac: "c4:34:6b:b5:ad:4d" }
+        #    - { type: interface, identifier: eno3, mac: "c4:34:6b:b5:ad:4e" }
+        #    - { type: interface, identifier: eno4, mac: "c4:34:6b:b5:ad:4f" }
+        #    - { type: bmc,       identifier: ilo4, mac: "c4:34:6b:bc:4f:64", subnet: oob, provider: IPMI, username: maas, password: y3Yvw2TaFB5Oe7, ip: 192.168.4.3, managed: false }
+        #    #- { type: interface, identifier: ens3f0, mac: "a0:36:9f:93:85:40" }
+        #    #- { type: interface, identifier: ens3f1, mac: "a0:36:9f:93:85:42" }
+        #    # Bonds
+        #    - { type: bond, identifier: bond0, mode: 802.3ad, attached_devices: [ eno1, eno2, eno3, eno4 ] }
+        #    # Vlans
+        #    - { type: interface, identifier: bond0.10, virtual: true, tag: "10", attached_to: bond0 }
+        #    ## Bridges
+        #    - { type: bridge,    identifier: br-provision, attached_devices: bond0, subnet: provision, primary: true }
+        #    - { type: bridge,    identifier: br-openstack, attached_devices: bond0.10 }
+        #- name: "local4-controller-03.{{ foreman_domain }}"
+        #  hostgroup: dl380gen8
+        #  ip: 192.168.3.102
+        #  interfaces_attributes:
+        #    - { type: interface, identifier: eno1, mac: "c4:34:6b:b6:a1:e0", subnet: provision, provision: true } #, ip: 192.168.3.102
+        #    - { type: interface, identifier: eno2, mac: "c4:34:6b:b6:a1:e1" }
+        #    - { type: interface, identifier: eno3, mac: "c4:34:6b:b6:a1:e2" }
+        #    - { type: interface, identifier: eno4, mac: "c4:34:6b:b6:a1:e3" }
+        #    - { type: bmc,       identifier: ilo4, mac: "c4:34:6b:bd:b2:3e", subnet: oob, provider: IPMI, username: maas, password: KCfNavFC6VfLul, ip: 192.168.4.4, managed: false }
+        #    #- { type: interface, identifier: ens3f0, mac: "00:1b:21:bc:f6:8c" }
+        #    #- { type: interface, identifier: ens3f1, mac: "00:1b:21:bc:f6:8d" }
+        #    # Bonds
+        #    - { type: bond, identifier: bond0, mode: 802.3ad, attached_devices: [ eno1, eno2, eno3, eno4 ] }
+        #    # Vlans
+        #    - { type: interface, identifier: bond0.10, virtual: true, tag: "10", attached_to: bond0 }
+        #    ## Bridges
+        #    - { type: bridge,    identifier: br-provision, attached_devices: bond0, subnet: provision, primary: true }
+        #    - { type: bridge,    identifier: br-openstack, attached_devices: bond0.10 }
+      register: _hosts
+
+    - name: create compute resources
+      theforeman.foreman.compute_resource:
+        <<: *foreman_auth
+        name: "{{ item.name }}"
+        provider: libvirt
+        provider_params:
+          url: "qemu+tcp://{{ item.name }}:16509/system"
+          #display_type: spice
+          set_console_password: false
+      loop: "{{ nodes }}"
