@@ -338,6 +338,10 @@ Vagrant.configure("2") do |config|
     subconfig.vm.provision "ansible foreman", type: "ansible", compatibility_mode: "2.0",
       galaxy_role_file: "ansible/ansible-collection-requirements.yml",
       raw_arguments: ["--diff"], playbook: "ansible/foreman.yml"
+
+    subconfig.vm.provision "ansible foreman-compute", type: "ansible", compatibility_mode: "2.0",
+      #galaxy_role_file: "ansible/ansible-collection-requirements.yml",
+      raw_arguments: ["--diff"], playbook: "ansible/foreman-compute.yml"
   end
 
   config.vm.define "test-discovery", autostart: false do |subconfig|
