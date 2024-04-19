@@ -1,4 +1,7 @@
 ---
+foreman_proxy::dhcp_gateway: "192.168.3.1"
+foreman_proxy::dhcp_range: "192.168.3.64 192.168.3.95"
+
 profile::foreman::dhcp_classes:
   ex3300-48p-clients:
     parameters:
